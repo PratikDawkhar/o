@@ -1,0 +1,237 @@
+Q1
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <time.h>
+
+#define MAX_BLOCKS 100
+
+// Function to initialize the disk with free blocks
+void initializeDisk(bool *bitVector, int n) {
+    for (int i = 0; i < n; i++) {
+        bitVector[i] = true;
+    }
+}
+
+// Function to display the bit vector
+void showBitVector(bool *bitVector, int n) {
+    printf("Bit Vector:\n");
+    for (int i = 0; i < n; i++) {
+        printf("%d ", bitVector[i]);
+    }
+    printf("\n");
+}
+
+// Function to create a new file
+void createNewFile(bool *bitVector, int n) {
+    // Check for free blocks
+    bool freeBlockAvailable = false;
+    for (int i = 0; i < n; i++) {
+        if (bitVector[i]) {
+            freeBlockAvailable = true;
+            break;
+        }
+    }
+
+    if (!freeBlockAvailable) {
+        printf("No free blocks available.\n");
+        return;
+    }
+
+    // Randomly select a block for the file
+    int blockIndex;
+    do {
+        blockIndex = rand() % n;
+    } while (!bitVector[blockIndex]);
+
+    // Mark the selected block as allocated
+    bitVector[blockIndex] = false;
+
+    printf("New file created at block %d.\n", blockIndex);
+}
+
+// Function to show the directory
+void showDirectory(bool *bitVector, int n) {
+    printf("Directory:\n");
+    for (int i = 0; i < n; i++) {
+        if (!bitVector[i]) {
+            printf("File at block %d\n", i);
+        }
+    }
+}
+
+// Function to delete a file
+void deleteFile(bool *bitVector, int n) {
+    int blockIndex;
+    printf("Enter the block index to delete the file: ");
+    scanf("%d", &blockIndex);
+
+    if (blockIndex < 0 || blockIndex >= n) {
+        printf("Invalid block index.\n");
+        return;
+    }
+
+    if (bitVector[blockIndex]) {
+        printf("No file exists at block %d.\n", blockIndex);
+        return;
+    }
+
+    // Mark the block as free
+    bitVector[blockIndex] = true;
+    printf("File deleted from block %d.\n", blockIndex);
+}
+
+int main() {
+    srand(time(NULL));
+
+    int n;
+    printf("Enter the total number of disk blocks: ");
+    scanf("%d", &n);
+
+    if (n <= 0 || n > MAX_BLOCKS) {
+        printf("Invalid number of disk blocks.\n");
+        return 1;
+    }
+
+    bool *bitVector = (bool *)malloc(n * sizeof(bool));
+    if (bitVector == NULL) {
+        printf("Memory allocation failed.\n");
+        return 1;
+    }
+
+    initializeDisk(bitVector, n);
+
+    int choice;
+    do {
+        printf("\nMenu:\n");
+        printf("1. Show Bit Vector\n");
+        printf("2. Create New File\n");
+        printf("3. Show Directory\n");
+        printf("4. Delete File\n");
+        printf("5. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                showBitVector(bitVector, n);
+                break;
+            case 2:
+                createNewFile(bitVector, n);
+                break;
+            case 3:
+                showDirectory(bitVector, n);
+                break;
+            case 4:
+                deleteFile(bitVector, n);
+                break;
+            case 5:
+                printf("Exiting program.\n");
+                break;
+            default:
+                printf("Invalid choice. Please try again.\n");
+        }
+    } while (choice != 5);
+
+    free(bitVector);
+    return 0;
+}
+
+Q2
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+// Function to sort disk request string in ascending order
+void sortRequests(int *requests, int size) {
+    for (int i = 0; i < size - 1; i++) {
+        for (int j = 0; j < size - i - 1; j++) {
+            if (requests[j] > requests[j + 1]) {
+                int temp = requests[j];
+                requests[j] = requests[j + 1];
+                requests[j + 1] = temp;
+            }
+        }
+    }
+}
+
+// Function to simulate SCAN algorithm
+void scan(int *requests, int size, int startHead, bool direction) {
+    int totalHeadMoments = 0;
+    int currentPosition = startHead;
+    bool *served = (bool *)calloc(size, sizeof(bool));
+
+    printf("Order of request service:\n");
+    if (direction) {
+        // Move right
+        for (int i = 0; i < size; i++) {
+            if (requests[i] >= currentPosition && !served[i]) {
+                printf("%d ", requests[i]);
+                totalHeadMoments += abs(requests[i] - currentPosition);
+                currentPosition = requests[i];
+                served[i] = true;
+            }
+        }
+        for (int i = size - 1; i >= 0; i--) {
+            if (!served[i]) {
+                printf("%d ", requests[i]);
+                totalHeadMoments += abs(requests[i] - currentPosition);
+                currentPosition = requests[i];
+                served[i] = true;
+            }
+        }
+    } else {
+        // Move left
+        for (int i = size - 1; i >= 0; i--) {
+            if (requests[i] <= currentPosition && !served[i]) {
+                printf("%d ", requests[i]);
+                totalHeadMoments += abs(requests[i] - currentPosition);
+                currentPosition = requests[i];
+                served[i] = true;
+            }
+        }
+        for (int i = 0; i < size; i++) {
+            if (!served[i]) {
+                printf("%d ", requests[i]);
+                totalHeadMoments += abs(requests[i] - currentPosition);
+                currentPosition = requests[i];
+                served[i] = true;
+            }
+        }
+    }
+
+    printf("\nTotal head moments: %d\n", totalHeadMoments);
+    free(served);
+}
+
+int main() {
+    int size;
+    printf("Enter the total number of disk blocks: ");
+    scanf("%d", &size);
+
+    int *requests = (int *)malloc(size * sizeof(int));
+    if (requests == NULL) {
+        printf("Memory allocation failed.\n");
+        return 1;
+    }
+
+    printf("Enter the disk request string:\n");
+    for (int i = 0; i < size; i++) {
+        scanf("%d", &requests[i]);
+    }
+
+    int startHead;
+    printf("Enter the starting head position: ");
+    scanf("%d", &startHead);
+
+    bool direction;
+    printf("Enter the direction (0 for left, 1 for right): ");
+    scanf("%d", &direction);
+
+    sortRequests(requests, size);
+    scan(requests, size, startHead, direction);
+
+    free(requests);
+    return 0;
+}
+

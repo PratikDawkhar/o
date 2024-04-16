@@ -1,0 +1,217 @@
+Q1
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <time.h>
+
+#define MAX_BLOCKS 100
+
+
+typedef struct Block {
+    int data;
+    struct Block* next;
+} Block;
+
+
+void initializeDisk(int n);
+void showBitVector(int n);
+void createNewFile(int n);
+void showDirectory();
+void releaseBlock(Block** head, int blockNum);
+
+
+Block* disk[MAX_BLOCKS] = {NULL};
+int numBlocks;
+
+int main() {
+    int choice;
+
+    
+    printf("Enter the number of blocks on the disk: ");
+    scanf("%d", &numBlocks);
+
+    
+    srand(time(NULL));
+
+    initializeDisk(numBlocks);
+
+    do {
+        
+        printf("\n1. Show Bit Vector\n");
+        printf("2. Create New File\n");
+        printf("3. Show Directory\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch(choice) {
+            case 1:
+                showBitVector(numBlocks);
+                break;
+            case 2:
+                createNewFile(numBlocks);
+                break;
+            case 3:
+                showDirectory();
+                break;
+            case 4:
+                printf("Exiting...\n");
+                break;
+            default:
+                printf("Invalid choice. Please try again.\n");
+        }
+    } while(choice != 4);
+
+    return 0;
+}
+
+
+void initializeDisk(int n) {
+    for (int i = 0; i < n; i++) {
+        if (rand() % 2 == 0) { 
+            disk[i] = (Block*)malloc(sizeof(Block));
+            disk[i]->data = i;
+            disk[i]->next = NULL;
+        }
+    }
+}
+
+void showBitVector(int n) {
+    printf("Bit Vector:\n");
+    for (int i = 0; i < n; i++) {
+        printf("%d ", disk[i] ? 1 : 0);
+    }
+    printf("\n");
+}
+
+void createNewFile(int n) {
+    int numBlocksNeeded;
+    printf("Enter the number of blocks needed for the file: ");
+    scanf("%d", &numBlocksNeeded);
+
+    int startBlock = -1;
+    int count = 0;
+    for (int i = 0; i < n; i++) {
+        if (disk[i] == NULL) {
+            if (startBlock == -1) {
+                startBlock = i;
+            }
+            count++;
+            if (count == numBlocksNeeded) {
+                printf("File created successfully. Allocated blocks: ");
+                for (int j = startBlock; j < startBlock + numBlocksNeeded; j++) {
+                    disk[j] = (Block*)malloc(sizeof(Block));
+                    disk[j]->data = j;
+                    disk[j]->next = NULL;
+                    printf("%d ", j);
+                }
+                printf("\n");
+                return;
+            }
+        } else {
+            startBlock = -1;
+            count = 0;
+        }
+    }
+
+    printf("Insufficient free space for the file.\n");
+}
+
+void showDirectory() {
+    printf("Directory:\n");
+    for (int i = 0; i < numBlocks; i++) {
+        if (disk[i] != NULL) {
+            printf("Block %d: ", i);
+            Block* current = disk[i];
+            while (current != NULL) {
+                printf("%d ", current->data);
+                current = current->next;
+            }
+            printf("\n");
+        }
+    }
+}
+
+Q2
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+void cScan(int blocks[], int n, int start, char direction);
+
+int main() {
+    int blocks[] = {80, 150, 60, 135, 40, 35, 170};
+    int n = sizeof(blocks) / sizeof(blocks[0]);
+    int start = 70;
+    char direction = 'R';
+
+    printf("Disk Request String: ");
+    for (int i = 0; i < n; i++) {
+        printf("%d ", blocks[i]);
+    }
+    printf("\n");
+
+    printf("Starting Head Position: %d\n", start);
+    printf("Direction: %c\n", direction);
+
+    cScan(blocks, n, start, direction);
+
+    return 0;
+}
+
+void cScan(int blocks[], int n, int start, char direction) {
+    int totalHeadMovements = 0;
+
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (blocks[j] > blocks[j + 1]) {
+                int temp = blocks[j];
+                blocks[j] = blocks[j + 1];
+                blocks[j + 1] = temp;
+            }
+        }
+    }
+
+    int startIndex = 0;
+    for (int i = 0; i < n; i++) {
+        if (blocks[i] >= start) {
+            startIndex = i;
+            break;
+        }
+    }
+
+    if (direction == 'R') {
+        printf("Head Movement Order: ");
+        for (int i = startIndex; i < n; i++) {
+            printf("%d ", blocks[i]);
+            totalHeadMovements += abs(blocks[i] - start);
+            start = blocks[i];
+        }
+        totalHeadMovements += abs(200 - blocks[n - 1]);
+        printf("199 ");
+        start = 199;
+        for (int i = 0; i < startIndex; i++) {
+            printf("%d ", blocks[i]);
+            totalHeadMovements += abs(blocks[i] - start);
+            start = blocks[i];
+        }
+    } else if (direction == 'L') { 
+        printf("Head Movement Order: ");
+        for (int i = startIndex; i >= 0; i--) {
+            printf("%d ", blocks[i]);
+            totalHeadMovements += abs(blocks[i] - start);
+            start = blocks[i];
+        }
+        totalHeadMovements += abs(0 - blocks[0]);
+        printf("0 ");
+        start = 0;
+        for (int i = n - 1; i > startIndex; i--) {
+            printf("%d ", blocks[i]);
+            totalHeadMovements += abs(blocks[i] - start);
+            start = blocks[i];
+        }
+    }
+
+    printf("\nTotal number of head movements: %d\n", totalHeadMovements);
+}
+

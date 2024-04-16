@@ -1,0 +1,141 @@
+Q1
+#include <stdio.h>
+#include <stdbool.h>
+
+#define MAX_RESOURCES 10
+#define MAX_PROCESSES 10
+
+void displayNeedMatrix(int need[MAX_PROCESSES][MAX_RESOURCES], int m, int n);
+bool isSafe(int available[MAX_RESOURCES], int allocation[MAX_PROCESSES][MAX_RESOURCES],
+            int need[MAX_PROCESSES][MAX_RESOURCES], int m, int n, int process, int request[]);
+
+int main() {
+    int m, n; 
+    int available[MAX_RESOURCES]; 
+    int allocation[MAX_PROCESSES][MAX_RESOURCES]; 
+    int max[MAX_PROCESSES][MAX_RESOURCES]; 
+    int need[MAX_PROCESSES][MAX_RESOURCES]; 
+
+    
+    printf("Enter the number of processes (m): ");
+    scanf("%d", &m);
+    printf("Enter the number of resource types (n): ");
+    scanf("%d", &n);
+
+    printf("Enter the available instances of each resource type: ");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &available[i]);
+    }
+
+    printf("Enter the allocation matrix:\n");
+    for (int i = 0; i < m; i++) {
+        printf("For process P%d: ", i);
+        for (int j = 0; j < n; j++) {
+            scanf("%d", &allocation[i][j]);
+        }
+    }
+
+    printf("Enter the maximum requirement matrix:\n");
+    for (int i = 0; i < m; i++) {
+        printf("For process P%d: ", i);
+        for (int j = 0; j < n; j++) {
+            scanf("%d", &max[i][j]);
+        }
+    }
+
+   
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            need[i][j] = max[i][j] - allocation[i][j];
+        }
+    }
+
+   
+    printf("\nNeed Matrix:\n");
+    displayNeedMatrix(need, m, n);
+
+    
+    int process;
+    int request[MAX_RESOURCES];
+
+    printf("\nEnter the process number making the request: ");
+    scanf("%d", &process);
+
+    printf("Enter the request for process P%d: ", process);
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &request[i]);
+    }
+
+    if (isSafe(available, allocation, need, m, n, process, request)) {
+        printf("The request can be granted immediately.\n");
+    } else {
+        printf("The request cannot be granted immediately.\n");
+    }
+
+    return 0;
+}
+
+
+void displayNeedMatrix(int need[MAX_PROCESSES][MAX_RESOURCES], int m, int n) {
+    for (int i = 0; i < m; i++) {
+        printf("P%d: ", i);
+        for (int j = 0; j < n; j++) {
+            printf("%d ", need[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+
+bool isSafe(int available[MAX_RESOURCES], int allocation[MAX_PROCESSES][MAX_RESOURCES],
+            int need[MAX_PROCESSES][MAX_RESOURCES], int m, int n, int process, int request[]) {
+    int work[MAX_RESOURCES];
+    bool finish[MAX_PROCESSES] = {false};
+
+
+    for (int i = 0; i < n; i++) {
+        work[i] = available[i];
+    }
+
+   
+    for (int i = 0; i < n; i++) {
+        if (request[i] > need[process][i] || request[i] > available[i]) {
+            return false;
+        }
+    }
+
+   
+    for (int i = 0; i < n; i++) {
+        work[i] -= request[i];
+        allocation[process][i] += request[i];
+        need[process][i] -= request[i];
+    }
+
+    
+    for (int i = 0; i < m; i++) {
+        if (!finish[i]) {
+            bool canAllocate = true;
+            for (int j = 0; j < n; j++) {
+                if (need[i][j] > work[j]) {
+                    canAllocate = false;
+                    break;
+                }
+            }
+            if (canAllocate) {
+                finish[i] = true;
+                for (int j = 0; j < n; j++) {
+                    work[j] += allocation[i][j];
+                }
+                i = -1; 
+            }
+        }
+    }
+
+    for (int i = 0; i < m; i++) {
+        if (!finish[i]) {
+            return false;
+        }
+    }
+
+    return true;
+}

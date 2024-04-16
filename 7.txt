@@ -1,0 +1,125 @@
+Q1
+#include <stdio.h>
+#include <stdbool.h>
+
+#define NUM_PROCESSES 5
+#define NUM_RESOURCES 4
+
+bool isSafeState(int allocation[][NUM_RESOURCES], int max[][NUM_RESOURCES], int available[]);
+
+int main() {
+    int allocation[NUM_PROCESSES][NUM_RESOURCES] = {
+        {2, 0, 0, 1},
+        {3, 1, 2, 1},
+        {2, 1, 0, 3},
+        {1, 3, 1, 2},
+        {1, 4, 3, 2}
+    };
+
+    int max[NUM_PROCESSES][NUM_RESOURCES] = {
+        {4, 2, 1, 2},
+        {5, 2, 5, 2},
+        {2, 3, 1, 6},
+        {1, 4, 2, 4},
+        {3, 6, 6, 5}
+    };
+
+    int available[NUM_RESOURCES] = {3, 3, 2, 1};
+
+    if (isSafeState(allocation, max, available)) {
+        printf("System is in a safe state.\n");
+    } else {
+        printf("System is not in a safe state.\n");
+    }
+
+    return 0;
+}
+
+bool isSafeState(int allocation[][NUM_RESOURCES], int max[][NUM_RESOURCES], int available[]) {
+    int work[NUM_RESOURCES];
+    bool finish[NUM_PROCESSES] = {false};
+
+    for (int i = 0; i < NUM_RESOURCES; i++) {
+        work[i] = available[i];
+    }
+
+    for (int i = 0; i < NUM_PROCESSES; i++) {
+        if (!finish[i]) {
+            bool canComplete = true;
+            for (int j = 0; j < NUM_RESOURCES; j++) {
+                if (allocation[i][j] > work[j]) {
+                    canComplete = false;
+                    break;
+                }
+            }
+            if (canComplete) {
+                finish[i] = true;
+                for (int j = 0; j < NUM_RESOURCES; j++) {
+                    work[j] += allocation[i][j];
+                }
+                i = -1;
+            }
+        }
+    }
+
+    for (int i = 0; i < NUM_PROCESSES; i++) {
+        if (!finish[i]) {
+            return false; 
+        }
+    }
+    return true; 
+}
+
+Q2
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_REQUESTS 100
+
+
+void fcfs(int requests[], int n, int start, char direction);
+
+int main() {
+    int requests[MAX_REQUESTS];
+    int n, start;
+    char direction;
+
+    printf("Enter total number of disk blocks: ");
+    scanf("%d", &n);
+
+    printf("Enter disk request string (separated by spaces): ");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &requests[i]);
+    }
+
+    printf("Enter current head position: ");
+    scanf("%d", &start);
+
+    printf("Enter direction (L for Left, R for Right): ");
+    scanf(" %c", &direction);
+
+    fcfs(requests, n, start, direction);
+
+    return 0;
+}
+
+void fcfs(int requests[], int n, int start, char direction) {
+    int total_head_movements = 0;
+
+    printf("\nRequest Order: ");
+    if (direction == 'L') {
+        for (int i = 0; i < n; i++) {
+            printf("%d ", requests[i]);
+            total_head_movements += abs(requests[i] - start);
+            start = requests[i];
+        }
+    } else if (direction == 'R') {
+        for (int i = n - 1; i >= 0; i--) {
+            printf("%d ", requests[i]);
+            total_head_movements += abs(requests[i] - start);
+            start = requests[i];
+        }
+    }
+
+    printf("\nTotal number of head movements: %d\n", total_head_movements);
+}

@@ -1,0 +1,62 @@
+Q1
+#include <stdio.h>
+#include <stdlib.h>
+int main()
+{
+int i, n, head, total_head_movements = 0;
+printf("Enter the total number of disk blocks: ");
+scanf("%d", &n);
+int disk_queue[n];
+printf("Enter the disk request string: ");
+for (i = 0; i < n; i++) {
+scanf("%d", &disk_queue[i]);
+}
+printf("Enter the current head position: ");
+scanf("%d", &head);
+printf("The list of requests in the order in which it is served:\n");
+printf("%d ", head);
+for (i = 0; i < n; i++) {
+total_head_movements += abs(disk_queue[i] - head);
+head = disk_queue[i];
+printf("%d ", head);
+}
+printf("\nTotal number of head movements: %d\n", total_head_movements);
+return 0;
+}
+
+Q2
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <mpi.h>
+#define ARRAY_SIZE 1000
+int main(int argc, char** argv)
+{
+int rank, size;
+int array[ARRAY_SIZE];
+int i, sum = 0, global_sum = 0;
+// Initialize MPI
+MPI_Init(&argc, &argv);
+MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+MPI_Comm_size(MPI_COMM_WORLD, &size);
+// Initialize random number generator
+srand(time(NULL) + rank);
+// Fill array with random numbers
+for (i = 0; i < ARRAY_SIZE; i++) {
+array[i] = rand() % 1000;
+}
+// Calculate local sum of even numbers
+for (i = 0; i < ARRAY_SIZE; i++) {
+if (array[i] % 2 == 0) {
+sum += array[i];
+}
+}
+// Reduce sum across all processes
+MPI_Reduce(&sum, &global_sum, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+if (rank == 0) {
+printf("The sum of all even numbers in the array is: %d\n", global_sum);
+}
+// Finalize MPI
+MPI_Finalize();
+return 0;
+}

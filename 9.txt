@@ -1,0 +1,145 @@
+Q1
+#include <stdio.h>
+
+#define NUM_PROCESSES 5
+#define NUM_RESOURCES 4
+
+int isSafeState(int available[], int allocation[][NUM_RESOURCES], int need[][NUM_RESOURCES]);
+
+int main() {
+    int available[NUM_RESOURCES] = {1, 5, 2, 0};
+    int allocation[NUM_PROCESSES][NUM_RESOURCES] = {
+        {0, 0, 1, 2},
+        {1, 0, 0, 0},
+        {1, 3, 5, 4},
+        {0, 6, 3, 2},
+        {0, 0, 1, 4}
+    };
+    int max[NUM_PROCESSES][NUM_RESOURCES] = {
+        {0, 0, 1, 2},
+        {1, 7, 5, 0},
+        {2, 3, 5, 6},
+        {0, 6, 5, 2},
+        {0, 6, 5, 6}
+    };
+
+    int need[NUM_PROCESSES][NUM_RESOURCES];
+    for (int i = 0; i < NUM_PROCESSES; i++) {
+        for (int j = 0; j < NUM_RESOURCES; j++) {
+            need[i][j] = max[i][j] - allocation[i][j];
+        }
+    }
+
+    if (isSafeState(available, allocation, need)) {
+        printf("System is in a safe state.\n");
+    } else {
+        printf("System is not in a safe state.\n");
+    }
+
+    return 0;
+}
+
+int isSafeState(int available[], int allocation[][NUM_RESOURCES], int need[][NUM_RESOURCES]) {
+    int work[NUM_RESOURCES];
+    int finish[NUM_PROCESSES] = {0};
+
+    for (int i = 0; i < NUM_RESOURCES; i++) {
+        work[i] = available[i];
+    }
+
+    int count = 0;
+    while (count < NUM_PROCESSES) {
+        int found = 0;
+        for (int i = 0; i < NUM_PROCESSES; i++) {
+            if (!finish[i]) {
+                int j;
+                for (j = 0; j < NUM_RESOURCES; j++) {
+                    if (need[i][j] > work[j]) {
+                        break;
+                    }
+                }
+                if (j == NUM_RESOURCES) {
+                    for (int k = 0; k < NUM_RESOURCES; k++) {
+                        work[k] += allocation[i][k];
+                    }
+                    finish[i] = 1;
+                    found = 1;
+                    count++;
+                }
+            }
+        }
+        if (!found) {
+            break;
+        }
+    }
+
+    return count == NUM_PROCESSES;
+}
+
+Q2
+#include <stdio.h>
+#include <stdlib.h>
+
+void look(int requests[], int numRequests, int start, char direction) {
+    int totalHeadMovements = 0;
+    int headPosition = start;
+
+    for (int i = 0; i < numRequests - 1; i++) {
+        for (int j = 0; j < numRequests - i - 1; j++) {
+            if (requests[j] > requests[j + 1]) {
+                int temp = requests[j];
+                requests[j] = requests[j + 1];
+                requests[j + 1] = temp;
+            }
+        }
+    }
+
+    printf("Order of service:\n");
+
+    if (direction == 'L') {
+        for (int i = numRequests - 1; i >= 0; i--) {
+            if (requests[i] <= start) {
+                printf("%d ", requests[i]);
+                totalHeadMovements += abs(headPosition - requests[i]);
+                headPosition = requests[i];
+            }
+        }
+    } else if (direction == 'R') {
+        for (int i = 0; i < numRequests; i++) {
+            if (requests[i] >= start) {
+                printf("%d ", requests[i]);
+                totalHeadMovements += abs(headPosition - requests[i]);
+                headPosition = requests[i];
+            }
+        }
+    }
+
+    printf("\nTotal head movements: %d\n", totalHeadMovements);
+}
+
+int main() {
+    int numBlocks, numRequests, start;
+    char direction;
+
+    printf("Enter the total number of disk blocks: ");
+    scanf("%d", &numBlocks);
+
+    printf("Enter the total number of disk requests: ");
+    scanf("%d", &numRequests);
+
+    int requests[numRequests];
+    printf("Enter the disk requests: ");
+    for (int i = 0; i < numRequests; i++) {
+        scanf("%d", &requests[i]);
+    }
+
+    printf("Enter the starting head position: ");
+    scanf("%d", &start);
+
+    printf("Enter the direction (L for left, R for right): ");
+    scanf(" %c", &direction);
+
+    look(requests, numRequests, start, direction);
+
+    return 0;
+}

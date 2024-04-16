@@ -1,0 +1,167 @@
+Q1
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define MAX_BLOCKS 100
+
+
+void showBitVector(int disk[], int numBlocks);
+void createNewFile(int disk[], int numBlocks);
+void showDirectory(int disk[], int numBlocks);
+
+int main() {
+    int numBlocks;
+
+ 
+    printf("Enter the total number of disk blocks: ");
+    scanf("%d", &numBlocks);
+
+    int disk[MAX_BLOCKS];
+    srand(time(NULL)); 
+
+  
+    for (int i = 0; i < numBlocks; i++) {
+        disk[i] = rand() % 2; 
+    }
+
+    int choice;
+    do {
+       
+        printf("\nMenu:\n");
+        printf("1. Show Bit Vector\n");
+        printf("2. Create New File\n");
+        printf("3. Show Directory\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        
+        switch (choice) {
+            case 1:
+                showBitVector(disk, numBlocks);
+                break;
+            case 2:
+                createNewFile(disk, numBlocks);
+                break;
+            case 3:
+                showDirectory(disk, numBlocks);
+                break;
+            case 4:
+                printf("Exiting...\n");
+                break;
+            default:
+                printf("Invalid choice. Please enter a number between 1 and 4.\n");
+        }
+    } while (choice != 4);
+
+    return 0;
+}
+
+
+void showBitVector(int disk[], int numBlocks) {
+    printf("\nBit Vector (Disk Blocks):\n");
+    for (int i = 0; i < numBlocks; i++) {
+        printf("%d ", disk[i]);
+    }
+    printf("\n");
+}
+
+
+void createNewFile(int disk[], int numBlocks) {
+    int startBlock, length;
+    printf("Enter the starting block number for the new file: ");
+    scanf("%d", &startBlock);
+    printf("Enter the length of the file: ");
+    scanf("%d", &length);
+
+  
+    int endBlock = startBlock + length - 1;
+    for (int i = startBlock; i <= endBlock; i++) {
+        if (disk[i] == 1) {
+            printf("Error: Block %d is already allocated.\n", i);
+            return;
+        }
+    }
+
+ 
+    for (int i = startBlock; i <= endBlock; i++) {
+        disk[i] = 1;
+    }
+
+    printf("File created successfully.\n");
+}
+
+
+void showDirectory(int disk[], int numBlocks) {
+    printf("\nDirectory:\n");
+    printf("Block  Status\n");
+    for (int i = 0; i < numBlocks; i++) {
+        printf("%5d  %s\n", i, disk[i] == 1 ? "Allocated" : "Free");
+    }
+}
+
+
+Q2
+#include <stdio.h>
+#include <stdlib.h>
+
+void sstf(int requests[], int numRequests, int start);
+
+int main() {
+    int numBlocks, numRequests, start;
+
+    printf("Enter the total number of disk blocks: ");
+    scanf("%d", &numBlocks);
+
+    printf("Enter the total number of disk requests: ");
+    scanf("%d", &numRequests);
+
+    int requests[numRequests];
+    printf("Enter the disk requests: ");
+    for (int i = 0; i < numRequests; i++) {
+        scanf("%d", &requests[i]);
+    }
+
+    printf("Enter the starting head position: ");
+    scanf("%d", &start);
+
+    sstf(requests, numRequests, start);
+
+    return 0;
+}
+
+void sstf(int requests[], int numRequests, int start) {
+    int visited[numRequests];
+    for (int i = 0; i < numRequests; i++) {
+        visited[i] = 0;
+    }
+
+    int totalHeadMovements = 0;
+
+    printf("Order of service:\n");
+
+    for (int i = 0; i < numRequests; i++) {
+        int minSeekTime = abs(requests[0] - start);
+        int minIndex = 0;
+        for (int j = 1; j < numRequests; j++) {
+            if (!visited[j]) {
+                int seekTime = abs(requests[j] - start);
+                if (seekTime < minSeekTime) {
+                    minSeekTime = seekTime;
+                    minIndex = j;
+                }
+            }
+        }
+
+        visited[minIndex] = 1;
+
+        totalHeadMovements += minSeekTime;
+
+        start = requests[minIndex];
+
+        printf("%d ", start);
+    }
+
+    printf("\nTotal head movements: %d\n", totalHeadMovements);
+}

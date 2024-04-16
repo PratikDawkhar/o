@@ -1,0 +1,166 @@
+Q1
+#include <stdio.h>
+
+#define MAX_PROCESS 5
+#define MAX_RESOURCE 3
+
+int available[MAX_RESOURCE];
+int allocation[MAX_PROCESS][MAX_RESOURCE];
+int max[MAX_PROCESS][MAX_RESOURCE];
+int need[MAX_PROCESS][MAX_RESOURCE];
+
+void acceptAvailable();
+void displayAllocationMax();
+void displayNeed();
+void displayAvailable();
+
+int main() {
+    int choice;
+    
+    int allocationData[MAX_PROCESS][MAX_RESOURCE] = {
+        {2, 3, 2},
+        {4, 0, 0},
+        {5, 0, 4},
+        {4, 3, 3},
+        {2, 2, 4}
+    };
+    
+    int maxData[MAX_PROCESS][MAX_RESOURCE] = {
+        {9, 7, 5},
+        {5, 2, 2},
+        {3, 0, 4},
+        {4, 4, 4},
+        {6, 5, 5}
+    };
+    
+
+    for(int i = 0; i < MAX_PROCESS; i++) {
+        for(int j = 0; j < MAX_RESOURCE; j++) {
+            allocation[i][j] = allocationData[i][j];
+            max[i][j] = maxData[i][j];
+        }
+    }
+    
+    do {
+        printf("\n\nMenu:\n");
+        printf("1. Accept Available\n");
+        printf("2. Display Allocation and Max\n");
+        printf("3. Display the contents of need matrix\n");
+        printf("4. Display Available\n");
+        printf("5. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+        
+        switch(choice) {
+            case 1:
+                acceptAvailable();
+                break;
+            case 2:
+                displayAllocationMax();
+                break;
+            case 3:
+                displayNeed();
+                break;
+            case 4:
+                displayAvailable();
+                break;
+            case 5:
+                printf("Exiting...\n");
+                break;
+            default:
+                printf("Invalid choice! Please enter a valid choice.\n");
+        }
+    } while(choice != 5);
+    
+    return 0;
+}
+
+void acceptAvailable() {
+    printf("Enter Available resources: ");
+    for(int i = 0; i < MAX_RESOURCE; i++) {
+        scanf("%d", &available[i]);
+    }
+}
+
+void displayAllocationMax() {
+    printf("\nProcess Allocation Max\n");
+    printf("----------------------------\n");
+    for(int i = 0; i < MAX_PROCESS; i++) {
+        printf("P%d ", i);
+        for(int j = 0; j < MAX_RESOURCE; j++) {
+            printf("%d ", allocation[i][j]);
+        }
+        printf("\t");
+        for(int j = 0; j < MAX_RESOURCE; j++) {
+            printf("%d ", max[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+void displayNeed() {
+    printf("\nNeed matrix\n");
+    printf("------------------\n");
+    for(int i = 0; i < MAX_PROCESS; i++) {
+        printf("P%d ", i);
+        for(int j = 0; j < MAX_RESOURCE; j++) {
+            need[i][j] = max[i][j] - allocation[i][j];
+            printf("%d ", need[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+void displayAvailable() {
+    printf("\nAvailable resources: ");
+    for(int i = 0; i < MAX_RESOURCE; i++) {
+        printf("%d ", available[i]);
+    }
+    printf("\n");
+}
+
+Q2
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_REQUESTS 100
+
+int calculateTotalHeadMovements(int requests[], int n, int startHeadPosition) {
+    int totalHeadMovements = 0;
+    int currentHeadPosition = startHeadPosition;
+
+    for (int i = 0; i < n; i++) {
+        totalHeadMovements += abs(currentHeadPosition - requests[i]);
+        currentHeadPosition = requests[i];
+    }
+
+    return totalHeadMovements;
+}
+
+int main() {
+    int requests[MAX_REQUESTS];
+    int n, startHeadPosition;
+
+    printf("Enter the total number of disk requests: ");
+    scanf("%d", &n);
+
+    printf("Enter the disk requests: ");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &requests[i]);
+    }
+
+    printf("Enter the start head position: ");
+    scanf("%d", &startHeadPosition);
+
+    printf("List of requests in the order served:\n");
+    for (int i = 0; i < n; i++) {
+        printf("%d ", requests[i]);
+    }
+    printf("\n");
+
+    int totalHeadMovements = calculateTotalHeadMovements(requests, n, startHeadPosition);
+
+    printf("Total number of head movements: %d\n", totalHeadMovements);
+
+    return 0;
+}

@@ -1,0 +1,211 @@
+Q1
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <time.h>
+
+#define MAX_FILES 10
+
+// Structure to represent a file
+struct File {
+    int index_block; // Index block number
+    int num_blocks;  // Number of blocks allocated
+    bool allocated;  // Flag to indicate if file is allocated
+};
+
+// Function to display the bit vector
+void showBitVector(bool *allocated, int n) {
+    printf("Bit Vector: ");
+    for (int i = 0; i < n; i++) {
+        printf("%d ", allocated[i]);
+    }
+    printf("\n");
+}
+
+// Function to show directory
+void showDirectory(struct File *files, int num_files) {
+    printf("Directory:\n");
+    printf("File No.\tIndex Block\tNum Blocks\n");
+    for (int i = 0; i < num_files; i++) {
+        if (files[i].allocated) {
+            printf("%d\t\t%d\t\t%d\n", i + 1, files[i].index_block, files[i].num_blocks);
+        }
+    }
+    printf("Total files: %d\n", num_files);
+}
+
+// Function to delete a file
+void deleteFile(struct File *files, int num_files) {
+    int file_num;
+    printf("Enter the file number to delete: ");
+    scanf("%d", &file_num);
+
+    // Check if file number is valid
+    if (file_num < 1 || file_num > num_files) {
+        printf("Invalid file number.\n");
+        return;
+    }
+
+    // Mark the file as deallocated
+    files[file_num - 1].allocated = false;
+    printf("File deleted successfully.\n");
+}
+
+int main() {
+    int n;
+    printf("Enter the number of blocks on disk: ");
+    scanf("%d", &n);
+
+    // Allocate memory for the bit vector
+    bool *allocated = (bool *)malloc(n * sizeof(bool));
+    if (allocated == NULL) {
+        printf("Memory allocation failed.\n");
+        return 1;
+    }
+
+    // Initialize the bit vector
+    for (int i = 0; i < n; i++) {
+        allocated[i] = false;
+    }
+
+    // Seed the random number generator
+    srand(time(NULL));
+
+    // Initialize the directory of files
+    struct File files[MAX_FILES];
+    int num_files = 0;
+
+    int choice;
+    while (1) {
+        printf("\nMenu:\n");
+        printf("1. Show Bit Vector\n");
+        printf("2. Show Directory\n");
+        printf("3. Delete File\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                showBitVector(allocated, n);
+                break;
+            case 2:
+                showDirectory(files, num_files);
+                break;
+            case 3:
+                deleteFile(files, num_files);
+                break;
+            case 4:
+                free(allocated);
+                printf("Exiting program.\n");
+                return 0;
+            default:
+                printf("Invalid choice. Please try again.\n");
+        }
+    }
+
+    return 0;
+}
+
+Q2
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+// Function to sort the disk request array in ascending order
+void sort(int *requests, int n) {
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (requests[j] > requests[j + 1]) {
+                int temp = requests[j];
+                requests[j] = requests[j + 1];
+                requests[j + 1] = temp;
+            }
+        }
+    }
+}
+
+// Function to simulate the LOOK disk scheduling algorithm
+void look(int *requests, int n, int start_head, bool left) {
+    // Sort the requests array
+    sort(requests, n);
+
+    // Initialize variables
+    int head = start_head;
+    int total_head_movements = 0;
+    int current_index = 0;
+
+    // Determine the direction of movement
+    int direction = left ? -1 : 1;
+
+    printf("Order of disk requests served:\n");
+    printf("%d ", head);
+
+    // Handle requests in the given direction
+    while (current_index < n) {
+        int next_head = -1;
+
+        // Search for the next request in the given direction
+        for (int i = current_index; i < n; i++) {
+            if (requests[i] >= 0 && requests[i] < 200) { // Assuming disk size is 200
+                if ((left && requests[i] < head) || (!left && requests[i] > head)) {
+                    next_head = requests[i];
+                    current_index = i;
+                    break;
+                }
+            }
+        }
+
+        // If no requests are found in the given direction, change direction
+        if (next_head == -1) {
+            direction *= -1;
+            continue;
+        }
+
+        // Calculate head movements
+        total_head_movements += abs(next_head - head);
+        head = next_head;
+
+        // Mark the current request as processed
+        requests[current_index] = -1;
+
+        // Print the current request
+        printf("%d ", head);
+
+        // Move to the next request
+        current_index += direction;
+    }
+
+    printf("\nTotal head movements: %d\n", total_head_movements);
+}
+
+int main() {
+    int n;
+    printf("Enter the total number of disk blocks: ");
+    scanf("%d", &n);
+
+    int *requests = (int *)malloc(n * sizeof(int));
+    if (requests == NULL) {
+        printf("Memory allocation failed.\n");
+        return 1;
+    }
+
+    printf("Enter the disk request string:\n");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &requests[i]);
+    }
+
+    int start_head;
+    printf("Enter the start head position: ");
+    scanf("%d", &start_head);
+
+    bool left;
+    printf("Enter the direction (0 for left, 1 for right): ");
+    scanf("%d", &left);
+
+    look(requests, n, start_head, left);
+
+    free(requests);
+    return 0;
+}
+

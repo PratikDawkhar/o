@@ -1,0 +1,111 @@
+Q1
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <time.h>
+
+typedef struct Block {
+    int block_number;
+    bool allocated;
+    int next_block;
+} Block;
+
+void initialize_disk(Block disk[], int n);
+void show_bit_vector(Block disk[], int n);
+void create_new_file(Block disk[], int n);
+void show_directory(Block disk[], int n);
+
+int main() {
+    int n;
+
+    printf("Enter the total number of disk blocks: ");
+    scanf("%d", &n);
+
+    Block *disk = (Block*)malloc(n * sizeof(Block));
+
+    initialize_disk(disk, n);
+
+    srand(time(NULL));
+
+    int choice;
+    do {
+        printf("\nMenu:\n");
+        printf("1. Show Bit Vector\n");
+        printf("2. Create New File\n");
+        printf("3. Show Directory\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                show_bit_vector(disk, n);
+                break;
+            case 2:
+                create_new_file(disk, n);
+                break;
+            case 3:
+                show_directory(disk, n);
+                break;
+            case 4:
+                printf("Exiting...\n");
+                break;
+            default:
+                printf("Invalid choice! Please enter a valid choice.\n");
+        }
+    } while (choice != 4);
+
+    free(disk);
+
+    return 0;
+}
+
+void initialize_disk(Block disk[], int n) {
+    for (int i = 0; i < n; i++) {
+        disk[i].block_number = i;
+        disk[i].allocated = false;
+        disk[i].next_block = -1;
+    }
+}
+
+void show_bit_vector(Block disk[], int n) {
+    printf("\nBit Vector Representation of Disk:\n");
+    printf("----------------------------------\n");
+    for (int i = 0; i < n; i++) {
+        if (disk[i].allocated) {
+            printf("1 ");
+        } else {
+            printf("0 ");
+        }
+    }
+    printf("\n");
+}
+
+void create_new_file(Block disk[], int n) {
+    int starting_block;
+    printf("Enter starting block number for the file: ");
+    scanf("%d", &starting_block);
+
+    int current_block = starting_block;
+    while (current_block < n) {
+        if (!disk[current_block].allocated) {
+            disk[current_block].allocated = true;
+            printf("Block %d allocated.\n", current_block);
+            current_block++;
+        } else {
+            printf("Block %d already allocated.\n", current_block);
+            break;
+        }
+    }
+}
+
+void show_directory(Block disk[], int n) {
+    printf("\nDirectory of Allocated Blocks:\n");
+    printf("------------------------------\n");
+    printf("Block Number\tNext Block\n");
+    for (int i = 0; i < n; i++) {
+        if (disk[i].allocated) {
+            printf("%d\t\t%d\n", disk[i].block_number, disk[i].next_block);
+        }
+    }
+}

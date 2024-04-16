@@ -1,0 +1,56 @@
+Q1
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <mpi.h>
+#define ARRAY_SIZE 1000
+int main(int argc, char** argv) {
+int rank, size, i;
+int* array = (int*)malloc(ARRAY_SIZE * sizeof(int));
+int min = 0, global_min;
+MPI_Init(&argc, &argv);
+MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+MPI_Comm_size(MPI_COMM_WORLD, &size);
+srand(time(NULL) + rank); // seed the random number generator with rank-dependent seed
+for (i = 0; i < ARRAY_SIZE; i++) {
+array[i] = rand();
+}
+MPI_Reduce(&array, &min, 1, MPI_INT, MPI_MIN, 0, MPI_COMM_WORLD);
+if (rank == 0) {
+printf("The minimum number is %d\n", min);
+}
+MPI_Finalize();
+free(array);
+return 0;
+}
+
+
+Q2
+#include <stdio.h>
+#include <stdlib.h>
+#define MAX_REQUESTS 100
+int main()
+{
+int requests[MAX_REQUESTS];
+int num_requests;
+int current_head_position;
+int total_head_movements = 0;
+printf("Enter the total number of disk blocks: ");
+scanf("%d", &num_requests);
+printf("Enter the disk request string: ");
+for(int i = 0; i < num_requests; i++)
+{
+scanf("%d", &requests[i]);
+}
+printf("Enter the current head position: ");
+scanf("%d", &current_head_position);
+printf("Order of request served:\n");
+for(int i = 0; i < num_requests; i++)
+{
+printf("%d ", requests[i]);
+total_head_movements += abs(current_head_position - requests[i]);
+current_head_position = requests[i];
+}
+printf("\nTotal number of head movements: %d\n", total_head_movements);
+return 0;
+}

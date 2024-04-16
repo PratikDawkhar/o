@@ -1,0 +1,119 @@
+Q1
+#include <stdio.h>
+#include <stdlib.h>
+
+void sortRequests(int *requests, int num_requests) {
+    for (int i = 0; i < num_requests - 1; i++) {
+        for (int j = 0; j < num_requests - i - 1; j++) {
+            if (requests[j] > requests[j + 1]) {
+                int temp = requests[j];
+                requests[j] = requests[j + 1];
+                requests[j + 1] = temp;
+            }
+        }
+    }
+}
+
+int calculateHeadMovements(int *requests, int num_requests, int start_head_position, int direction) {
+    int total_head_movements = 0;
+
+    sortRequests(requests, num_requests);
+
+    int start_index = 0;
+    for (int i = 0; i < num_requests; i++) {
+        if (requests[i] >= start_head_position) {
+            start_index = i;
+            break;
+        }
+    }
+
+    if (direction == 1) {
+        for (int i = start_index; i < num_requests; i++) {
+            total_head_movements += abs(start_head_position - requests[i]);
+            start_head_position = requests[i];
+        }
+        total_head_movements += abs(start_head_position - requests[0]);
+        start_head_position = requests[0];
+    }
+    else {
+        for (int i = start_index - 1; i >= 0; i--) {
+            total_head_movements += abs(start_head_position - requests[i]);
+            start_head_position = requests[i];
+        }
+        total_head_movements += abs(start_head_position - requests[num_requests - 1]);
+        start_head_position = requests[num_requests - 1];
+    }
+
+    return total_head_movements;
+}
+
+int main() {
+    int num_blocks, num_requests, start_head_position, direction;
+
+    printf("Enter the total number of disk blocks: ");
+    scanf("%d", &num_blocks);
+    printf("Enter the total number of disk requests: ");
+    scanf("%d", &num_requests);
+
+    int *requests = (int *)malloc(num_requests * sizeof(int));
+
+    printf("Enter the disk requests: ");
+    for (int i = 0; i < num_requests; i++) {
+        scanf("%d", &requests[i]);
+    }
+
+    printf("Enter the starting head position: ");
+    scanf("%d", &start_head_position);
+
+    printf("Enter the direction (1 for right, 0 for left): ");
+    scanf("%d", &direction);
+
+    int total_head_movements = calculateHeadMovements(requests, num_requests, start_head_position, direction);
+
+    printf("The list of requests served in the order is: ");
+    for (int i = 0; i < num_requests; i++) {
+        printf("%d ", requests[i]);
+    }
+    printf("\n");
+    printf("Total head movements: %d\n", total_head_movements);
+
+    free(requests);
+
+    return 0;
+}
+
+
+Q2
+#include <stdio.h>
+#include <stdlib.h>
+#include <mpi.h>
+#define ARRAY_SIZE 1000
+int main(int argc, char *argv[]) {
+int rank, size, i;
+int array[ARRAY_SIZE];
+int local_sum = 0, global_sum = 0;
+MPI_Init(&argc, &argv);
+MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+MPI_Comm_size(MPI_COMM_WORLD, &size);
+if (rank == 0) {
+// Generate random numbers in array
+srand(12345);
+for (i = 0; i < ARRAY_SIZE; i++) {
+array[i] = rand() % 100;
+}
+}
+// Distribute the array to all processes
+MPI_Scatter(array, ARRAY_SIZE/size, MPI_INT, array, ARRAY_SIZE/size, MPI_INT, 0,
+MPI_COMM_WORLD);
+// Calculate local sum
+for (i = 0; i < ARRAY_SIZE/size; i++) {
+local_sum += array[i];
+}
+// Calculate global sum using MPI_Reduce
+MPI_Reduce(&local_sum, &global_sum, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+if (rank == 0) {
+printf("The sum of the %d numbers is %d\n", ARRAY_SIZE, global_sum);
+}
+MPI_Finalize();
+return 0;
+}

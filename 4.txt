@@ -1,0 +1,161 @@
+Q1
+#include <stdio.h>
+
+#define NUM_PROCESSES 5
+#define NUM_RESOURCES 3
+
+int available[NUM_RESOURCES];
+int allocation[NUM_PROCESSES][NUM_RESOURCES];
+int max[NUM_PROCESSES][NUM_RESOURCES];
+int need[NUM_PROCESSES][NUM_RESOURCES];
+
+void accept_available();
+void accept_allocation_max();
+void find_need();
+void display_need();
+void display_available();
+
+int main() {
+    char choice;
+
+    available[0] = 7;
+    available[1] = 2;
+    available[2] = 6;
+
+    do {
+        printf("\nBanker's Algorithm Menu\n");
+        printf("a) Accept Available\n");
+        printf("b) Display Allocation, Max\n");
+        printf("c) Find Need and display It\n");
+        printf("d) Display Available\n");
+        printf("e) Exit\n");
+        printf("Enter your choice: ");
+        scanf(" %c", &choice);
+
+        switch(choice) {
+            case 'a':
+                accept_available();
+                break;
+            case 'b':
+                accept_allocation_max();
+                break;
+            case 'c':
+                find_need();
+                display_need();
+                break;
+            case 'd':
+                display_available();
+                break;
+            case 'e':
+                printf("Exiting...\n");
+                break;
+            default:
+                printf("Invalid choice! Please try again.\n");
+        }
+    } while (choice != 'e');
+
+    return 0;
+}
+
+void accept_available() {
+    printf("\nEnter the available resources for A, B, and C: ");
+    scanf("%d %d %d", &available[0], &available[1], &available[2]);
+}
+
+void accept_allocation_max() {
+    printf("\nEnter the allocation and max for each process:\n");
+    printf("Process Allocation Request\n");
+    printf("      A B C     A B C\n");
+    for (int i = 0; i < NUM_PROCESSES; i++) {
+        printf("P%d ", i);
+        for (int j = 0; j < NUM_RESOURCES; j++) {
+            scanf("%d", &allocation[i][j]);
+        }
+        for (int j = 0; j < NUM_RESOURCES; j++) {
+            scanf("%d", &max[i][j]);
+        }
+    }
+}
+
+void find_need() {
+    for (int i = 0; i < NUM_PROCESSES; i++) {
+        for (int j = 0; j < NUM_RESOURCES; j++) {
+            need[i][j] = max[i][j] - allocation[i][j];
+        }
+    }
+}
+
+void display_need() {
+    printf("\nNeed Matrix\n");
+    printf("A B C\n");
+    for (int i = 0; i < NUM_PROCESSES; i++) {
+        printf("P%d ", i);
+        for (int j = 0; j < NUM_RESOURCES; j++) {
+            printf("%d ", need[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+void display_available() {
+    printf("\nAvailable Resources\n");
+    printf("A B C\n");
+    for (int j = 0; j < NUM_RESOURCES; j++) {
+        printf("%d ", available[j]);
+    }
+    printf("\n");
+}
+
+Q2
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_REQUESTS 100
+
+
+void fcfs(int requests[], int n, int start, char direction);
+
+int main() {
+    int requests[MAX_REQUESTS];
+    int n, start;
+    char direction;
+
+    printf("Enter total number of disk blocks: ");
+    scanf("%d", &n);
+
+    printf("Enter disk request string (separated by spaces): ");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &requests[i]);
+    }
+
+    printf("Enter current head position: ");
+    scanf("%d", &start);
+
+    printf("Enter direction (L for Left, R for Right): ");
+    scanf(" %c", &direction);
+
+    fcfs(requests, n, start, direction);
+
+    return 0;
+}
+
+void fcfs(int requests[], int n, int start, char direction) {
+    int total_head_movements = 0;
+
+    printf("\nRequest Order: ");
+    if (direction == 'L') {
+        for (int i = 0; i < n; i++) {
+            printf("%d ", requests[i]);
+            total_head_movements += abs(requests[i] - start);
+            start = requests[i];
+        }
+    } else if (direction == 'R') {
+        for (int i = n - 1; i >= 0; i--) {
+            printf("%d ", requests[i]);
+            total_head_movements += abs(requests[i] - start);
+            start = requests[i];
+        }
+    }
+
+    printf("\nTotal number of head movements: %d\n", total_head_movements);
+}

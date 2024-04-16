@@ -1,0 +1,197 @@
+Q1
+#include <stdio.h>
+#include <stdbool.h>
+
+// Function to calculate need matrix
+void calculateNeedMatrix(int need[][3], int max[][3], int allocation[][3], int num_processes, int num_resources) {
+    for (int i = 0; i < num_processes; i++) {
+        for (int j = 0; j < num_resources; j++) {
+            need[i][j] = max[i][j] - allocation[i][j];
+        }
+    }
+}
+
+// Function to check if the system is in a safe state and find the safe sequence
+bool isSafeState(int available[], int allocation[][3], int need[][3], int num_processes, int num_resources, int safe_sequence[]) {
+    int work[num_resources];
+    bool finish[num_processes];
+
+    // Initialize work and finish arrays
+    for (int i = 0; i < num_resources; i++) {
+        work[i] = available[i];
+    }
+    for (int i = 0; i < num_processes; i++) {
+        finish[i] = false;
+    }
+
+    int num_finished_processes = 0;
+    while (num_finished_processes < num_processes) {
+        bool found = false;
+        for (int i = 0; i < num_processes; i++) {
+            if (!finish[i]) {
+                bool can_allocate = true;
+                for (int j = 0; j < num_resources; j++) {
+                    if (need[i][j] > work[j]) {
+                        can_allocate = false;
+                        break;
+                    }
+                }
+                if (can_allocate) {
+                    // Process i can finish
+                    for (int j = 0; j < num_resources; j++) {
+                        work[j] += allocation[i][j];
+                    }
+                    finish[i] = true;
+                    safe_sequence[num_finished_processes] = i;
+                    num_finished_processes++;
+                    found = true;
+                }
+            }
+        }
+        if (!found) {
+            // System is not in a safe state
+            return false;
+        }
+    }
+    // System is in a safe state
+    return true;
+}
+
+int main() {
+    int num_processes, num_resources;
+
+    // Accepting input for number of processes and resources
+    printf("Enter the number of processes: ");
+    scanf("%d", &num_processes);
+    printf("Enter the number of resources: ");
+    scanf("%d", &num_resources);
+
+    // Allocating memory for arrays
+    int max[num_processes][3], allocation[num_processes][3], available[3], need[num_processes][3];
+    int safe_sequence[num_processes];
+
+    // Accepting input for max matrix
+    printf("Enter the max matrix:\n");
+    for (int i = 0; i < num_processes; i++) {
+        printf("Process P%d: ", i);
+        for (int j = 0; j < num_resources; j++) {
+            scanf("%d", &max[i][j]);
+        }
+    }
+
+    // Accepting input for allocation matrix
+    printf("Enter the allocation matrix:\n");
+    for (int i = 0; i < num_processes; i++) {
+        printf("Process P%d: ", i);
+        for (int j = 0; j < num_resources; j++) {
+            scanf("%d", &allocation[i][j]);
+        }
+    }
+
+    // Accepting input for available resources
+    printf("Enter the available resources: ");
+    for (int i = 0; i < num_resources; i++) {
+        scanf("%d", &available[i]);
+    }
+
+    // Calculating need matrix
+    calculateNeedMatrix(need, max, allocation, num_processes, num_resources);
+
+    // Checking if the system is in a safe state and finding safe sequence
+    if (isSafeState(available, allocation, need, num_processes, num_resources, safe_sequence)) {
+        printf("The system is in a safe state.\n");
+        printf("Safe sequence: ");
+        for (int i = 0; i < num_processes; i++) {
+            printf("P%d ", safe_sequence[i]);
+        }
+        printf("\n");
+    } else {
+        printf("The system is not in a safe state.\n");
+    }
+
+    return 0;
+}
+
+Q2
+#include<stdio.h>
+#include<stdlib.h>
+int main()
+{
+int RQ[100],i,j,n,TotalHeadMoment=0,initial,size,move;
+printf("Enter the number of Requests\n");
+scanf("%d",&n);
+printf("Enter the Requests sequence\n");
+for(i=0;i<n;i++)
+scanf("%d",&RQ[i]);
+printf("Enter initial head position\n");
+scanf("%d",&initial);
+printf("Enter total disk size\n");
+scanf("%d",&size);
+printf("Enter the head movement direction for high 1 and for low 0\n");
+scanf("%d",&move);
+// logic for C-Scan disk scheduling
+/*logic for sort the request array */
+for(i=0;i<n;i++)
+{
+for( j=0;j<n-i-1;j++)
+{
+if(RQ[j]>RQ[j+1])
+{
+int temp;
+temp=RQ[j];
+RQ[j]=RQ[j+1];
+RQ[j+1]=temp;
+}
+}
+}
+int index;
+for(i=0;i<n;i++)
+{
+if(initial<RQ[i])
+{
+index=i;
+break;
+}
+}
+// if movement is towards high value
+if(move==1)
+{
+for(i=index;i<n;i++)
+{
+TotalHeadMoment=TotalHeadMoment+abs(RQ[i]-initial);
+initial=RQ[i];
+}
+// last movement for max size
+TotalHeadMoment=TotalHeadMoment+abs(size-RQ[i-1]-1);
+/*movement max to min disk */
+TotalHeadMoment=TotalHeadMoment+abs(size-1-0);
+initial=0;
+for( i=0;i<index;i++)
+{
+TotalHeadMoment=TotalHeadMoment+abs(RQ[i]-initial);
+initial=RQ[i];
+}
+}
+// if movement is towards low value
+else
+{
+for(i=index-1;i>=0;i--)
+{
+TotalHeadMoment=TotalHeadMoment+abs(RQ[i]-initial);
+initial=RQ[i];
+}
+// last movement for min size
+TotalHeadMoment=TotalHeadMoment+abs(RQ[i+1]-0);
+/*movement min to max disk */
+TotalHeadMoment=TotalHeadMoment+abs(size-1-0);
+initial =size-1;
+for(i=n-1;i>=index;i--)
+{
+TotalHeadMoment=TotalHeadMoment+abs(RQ[i]-initial);
+initial=RQ[i];
+}
+}
+printf("Total head movement is %d",TotalHeadMoment);
+return 0;
+}
+

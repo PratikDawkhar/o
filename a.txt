@@ -1,0 +1,1935 @@
+Os Solutions
+Slip 1)
+Q.1 ) Write a C Menu driven Program to implement following functionality
+a) Accept Available
+b) Display Allocation, Max
+c) Display the contents of need matrix
+d) Display Available
+
+Process Allocation Max Available
+ A B C A B C A B C
+P0 2 3 2 9 7 5 3 3 2
+P1 4 0 0 5 2 2
+P2 5 0 4 1 0 4
+P3 4 3 3 4 4 4
+P4 2 2 4 6 5 5
+
+
+Solution:
+#include <stdio.h>
+#define MAX_PROCESS 5
+#define MAX_RESOURCE 3
+int allocation[MAX_PROCESS][MAX_RESOURCE];
+int max[MAX_PROCESS][MAX_RESOURCE];
+int need[MAX_PROCESS][MAX_RESOURCE];
+int available[MAX_RESOURCE];
+void acceptAvailable() {
+ printf("Enter available resources: ");
+ for (int i = 0; i < MAX_RESOURCE; i++) {
+ scanf("%d", &available[i]);
+ }
+}
+void displayAllocationMax() {
+
+2
+ printf("Process Allocation Max\n");
+ printf(" A B C A B C\n");
+ for (int i = 0; i < MAX_PROCESS; i++) {
+ printf("P%d", i);
+ for (int j = 0; j < MAX_RESOURCE; j++) {
+ printf(" %d", allocation[i][j]);
+ }
+ printf(" ");
+ for (int j = 0; j < MAX_RESOURCE; j++) {
+ printf("%d ", max[i][j]);
+ }
+ printf("\n");
+ }
+}
+void displayNeedMatrix() {
+ printf("Need Matrix\n");
+ printf(" A B C\n");
+ for (int i = 0; i < MAX_PROCESS; i++) {
+ printf("P%d", i);
+ for (int j = 0; j < MAX_RESOURCE; j++) {
+ printf(" %d", need[i][j]);
+ }
+ printf("\n");
+ }
+}
+void displayAvailable() {
+ printf("Available Resources: ");
+ for (int i = 0; i < MAX_RESOURCE; i++) {
+ printf("%d ", available[i]);
+ }
+ printf("\n");
+}
+3
+int main() {
+ // Initializing allocation and max matrices
+ int allocationInput[MAX_PROCESS][MAX_RESOURCE] = {
+ {2, 3, 2},
+ {4, 0, 0},
+ {5, 0, 4},
+ {4, 3, 3},
+ {2, 2, 4}
+ };
+ int maxInput[MAX_PROCESS][MAX_RESOURCE] = {
+ {9, 7, 5},
+ {5, 2, 2},
+ {1, 0, 4},
+ {4, 4, 4},
+ {6, 5, 5}
+ };
+ // Copying input to the global matrices
+ for (int i = 0; i < MAX_PROCESS; i++) {
+ for (int j = 0; j < MAX_RESOURCE; j++) {
+ allocation[i][j] = allocationInput[i][j];
+ max[i][j] = maxInput[i][j];
+ need[i][j] = max[i][j] - allocation[i][j];
+ }
+ }
+ int choice;
+ do {
+ printf("\n1. Accept Available Resources\n");
+ printf("2. Display Allocation and Max\n");
+ printf("3. Display Need Matrix\n");
+ printf("4. Display Available Resources\n");
+ printf("5. Exit\n");
+ printf("Enter your choice: ");
+ scanf("%d", &choice);
+ switch (choice) {
+
+4
+ case 1:
+ acceptAvailable();
+ break;
+ case 2:
+ displayAllocationMax();
+ break;
+ case 3:
+ displayNeedMatrix();
+ break;
+ case 4:
+ displayAvailable();
+ break;
+ case 5:
+ printf("Exiting...\n");
+ break;
+ default:
+ printf("Invalid choice. Please try again.\n");
+ }
+ } while (choice != 5);
+ return 0;
+}
+
+
+Q.2 Write a simulation program for disk scheduling using FCFS algorithm. Accept
+total number of disk blocks, disk request string, and current head position from the
+user. Display the list of request in the order in which it is served. Also display the total
+number of head moments.
+ 55, 58, 39, 18, 90, 160, 150, 38, 184
+ Start Head Position: 50
+ [15]
+ Solution:
+#include <stdio.h>
+5
+#include <stdlib.h>
+void fcfs(int *requests, int total_requests, int start_head_position) {
+ int total_head_movements = 0;
+ int current_head_position = start_head_position;
+ printf("Order of service: ");
+ for (int i = 0; i < total_requests; i++) {
+ printf("%d ", requests[i]);
+ total_head_movements += abs(current_head_position - requests[i]);
+ current_head_position = requests[i];
+ }
+ printf("\nTotal head movements: %d\n", total_head_movements);
+}
+int main() {
+ int total_blocks, start_head_position;
+ printf("Enter the total number of disk blocks: ");
+ scanf("%d", &total_blocks);
+ int *requests = (int *)malloc(total_blocks * sizeof(int));
+ if (requests == NULL) {
+ printf("Memory allocation failed. Exiting...\n");
+ return 1;
+ }
+ printf("Enter the disk request string: ");
+ for (int i = 0; i < total_blocks; i++) {
+ scanf("%d", &requests[i]);
+ }
+ printf("Enter the start head position: ");
+ scanf("%d", &start_head_position);
+ fcfs(requests, total_blocks, start_head_position);
+
+6
+ free(requests);
+ return 0;
+}
+
+
+
+
+
+
+
+7
+Slip 4)
+Q.1 Implement the Menu driven Banker's algorithm for accepting Allocation, Max from
+user.
+a) Accept Available
+b)Display Allocation, Max
+c) Find Need and display It,
+d)Display Available
+Consider the system with 3 resources types A,B, and C with 7,2,6 instances respectively.
+Consider the following snapshot:
+Process Allocation Request
+ A B C A B C
+P0 0 1 0 0 0 0
+P1 4 0 0 5 2 2
+P2 5 0 4 1 0 4
+P3 4 3 3 4 4 4
+P4 2 2 4 6 5 5
+
+
+Solution:
+#include <stdio.h>
+#define MAX_PROCESS 5
+#define MAX_RESOURCE 3
+int allocation[MAX_PROCESS][MAX_RESOURCE];
+int max[MAX_PROCESS][MAX_RESOURCE];
+int need[MAX_PROCESS][MAX_RESOURCE];
+int available[MAX_RESOURCE] = {7, 2, 6};
+void acceptAvailable() {
+ printf("Available resources (A B C): ");
+ scanf("%d %d %d", &available[0], &available[1], &available[2]);
+}
+
+8
+void displayAllocationMax() {
+ printf("Process Allocation Max\n");
+ printf(" A B C A B C\n");
+ for (int i = 0; i < MAX_PROCESS; i++) {
+ printf("P%d", i);
+ for (int j = 0; j < MAX_RESOURCE; j++) {
+ printf(" %d", allocation[i][j]);
+ }
+ printf(" ");
+ for (int j = 0; j < MAX_RESOURCE; j++) {
+ printf("%d ", max[i][j]);
+ }
+ printf("\n");
+ }
+}
+void calculateNeed() {
+ printf("Need Matrix\n");
+ printf(" A B C\n");
+ for (int i = 0; i < MAX_PROCESS; i++) {
+ printf("P%d", i);
+ for (int j = 0; j < MAX_RESOURCE; j++) {
+ need[i][j] = max[i][j] - allocation[i][j];
+ printf(" %d", need[i][j]);
+ }
+ printf("\n");
+ }
+}
+void displayAvailable() {
+ printf("Available Resources (A B C): %d %d %d\n", available[0], available[1],
+available[2]);
+}
+9
+int main() {
+ // Initializing allocation and max matrices
+ int allocationInput[MAX_PROCESS][MAX_RESOURCE] = {
+ {0, 1, 0},
+ {4, 0, 0},
+ {5, 0, 4},
+ {4, 3, 3},
+ {2, 2, 4}
+ };
+ int maxInput[MAX_PROCESS][MAX_RESOURCE] = {
+ {0, 0, 0},
+ {5, 2, 2},
+ {1, 0, 4},
+ {4, 4, 4},
+ {6, 5, 5}
+ };
+ // Copying input to the global matrices
+ for (int i = 0; i < MAX_PROCESS; i++) {
+ for (int j = 0; j < MAX_RESOURCE; j++) {
+ allocation[i][j] = allocationInput[i][j];
+ max[i][j] = maxInput[i][j];
+ }
+ }
+ char choice;
+ do {
+ printf("\nMenu:\n");
+ printf("a) Accept Available Resources\n");
+ printf("b) Display Allocation and Max\n");
+ printf("c) Calculate and Display Need Matrix\n");
+ printf("d) Display Available Resources\n");
+ printf("e) Exit\n");
+ printf("Enter your choice: ");
+ scanf(" %c", &choice);
+ switch (choice) {
+
+10
+ case 'a':
+ acceptAvailable();
+ break;
+ case 'b':
+ displayAllocationMax();
+ break;
+ case 'c':
+ calculateNeed();
+ break;
+ case 'd':
+ displayAvailable();
+ break;
+ case 'e':
+ printf("Exiting...\n");
+ break;
+ default:
+ printf("Invalid choice. Please try again.\n");
+ }
+ } while (choice != 'e');
+ return 0;
+} [15]
+Q.2 Write a simulation program for disk scheduling using SCAN algorithm. Accept total
+number of disk blocks, disk request string, and current head position from the user.
+Display the list of request in the order in which it is served. Also display the total number
+of head moments. 86, 147, 91, 170, 95, 130, 102, 70
+Starting Head position= 125 Direction:
+Left
+ [15]
+ Solution:
+#include <stdio.h>
+#include <stdlib.h>
+11
+#define MAX_REQUESTS 1000
+int cmpfunc(const void *a, const void *b) {
+ return (*(int *)a - *(int *)b);
+}
+void scan(int *requests, int total_requests, int start_head_position, char direction) {
+ int total_head_movements = 0;
+ int current_head_position = start_head_position;
+ qsort(requests, total_requests, sizeof(int), cmpfunc);
+ int index;
+ for (index = 0; index < total_requests; index++) {
+ if (requests[index] >= start_head_position) {
+ break;
+ }
+ }
+ if (direction == 'L') {
+ for (int i = index - 1; i >= 0; i--) {
+ printf("%d ", requests[i]);
+ total_head_movements += abs(current_head_position - requests[i]);
+ current_head_position = requests[i];
+
+12
+ }
+ for (int i = index; i < total_requests; i++) {
+ printf("%d ", requests[i]);
+ total_head_movements += abs(current_head_position - requests[i]);
+ current_head_position = requests[i];
+ }
+ } else if (direction == 'R') {
+ for (int i = index; i < total_requests; i++) {
+ printf("%d ", requests[i]);
+ total_head_movements += abs(current_head_position - requests[i]);
+ current_head_position = requests[i];
+ }
+ for (int i = index - 1; i >= 0; i--) {
+ printf("%d ", requests[i]);
+ total_head_movements += abs(current_head_position - requests[i]);
+ current_head_position = requests[i];
+ }
+ }
+ printf("\nTotal head movements: %d\n", total_head_movements);
+}
+int main() {
+13
+ int total_blocks, start_head_position;
+ char direction;
+ int requests[MAX_REQUESTS];
+ int total_requests = 0;
+ printf("Enter the total number of disk blocks: ");
+ scanf("%d", &total_blocks);
+ printf("Enter the disk request string (enter -1 to end): ");
+ while (1) {
+ int request;
+ scanf("%d", &request);
+ if (request == -1) {
+ break;
+ }
+ requests[total_requests++] = request;
+ }
+ printf("Enter the starting head position: ");
+ scanf("%d", &start_head_position);
+ printf("Enter the direction (L for left, R for right): ");
+ scanf(" %c", &direction);
+
+14
+ scan(requests, total_requests, start_head_position, direction);
+ return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+15
+Slip 6)
+Q.1 Write a program to simulate Linked file allocation method. Assume disk with n
+number of blocks. Give value of n as input. Randomly mark some block as allocated and
+accordingly maintain the list of free blocks Write menu driver program with menu options
+as mentioned below and implement each option.
+• Show Bit Vector
+• Create New File
+• Show Directory
+• Exit
+Solution:
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <time.h>
+#define MAX_BLOCKS 100
+bool allocated[MAX_BLOCKS] = {false};
+void showBitVector(int total_blocks) {
+ printf("Bit Vector (1 denotes allocated, 0 denotes free):\n");
+ for (int i = 0; i < total_blocks; i++) {
+ printf("%d ", allocated[i]);
+ }
+ printf("\n");
+}
+void createNewFile(int total_blocks) {
+ int start_block, file_size;
+
+
+16
+ printf("Enter starting block number for the new file: ");
+ scanf("%d", &start_block);
+
+ printf("Enter file size: ");
+ scanf("%d", &file_size);
+
+ bool free_blocks = true;
+ for (int i = start_block; i < start_block + file_size; i++) {
+ if (allocated[i]) {
+ free_blocks = false;
+ break;
+ }
+ }
+
+ if (free_blocks) {
+ for (int i = start_block; i < start_block + file_size; i++) {
+ allocated[i] = true;
+ }
+ printf("File created successfully.\n");
+ } else {
+ printf("Error: Not enough free space to create the file.\n");
+ }
+}
+void showDirectory(int total_blocks) {
+ printf("Directory:\n");
+ printf("File Name\tStarting Block\tSize\n");
+17
+ bool in_file = false;
+ int start_block = 0, file_size = 0;
+ for (int i = 0; i < total_blocks; i++) {
+ if (!in_file && allocated[i]) {
+ in_file = true;
+ start_block = i;
+ file_size++;
+ } else if (in_file && allocated[i]) {
+ file_size++;
+ } else if (in_file && !allocated[i]) {
+ printf("File %d\t\t%d\t\t%d\n", i, start_block, file_size);
+ in_file = false;
+ start_block = 0;
+ file_size = 0;
+ }
+ }
+ if (in_file) {
+ printf("File %d\t\t%d\t\t%d\n", total_blocks, start_block, file_size);
+ }
+}
+int main() {
+ int total_blocks, choice;
+
+ printf("Enter the total number of disk blocks: ");
+ scanf("%d", &total_blocks);
+
+ srand(time(NULL));
+
+18
+
+ while (true) {
+ printf("\nMenu:\n");
+ printf("1. Show Bit Vector\n");
+ printf("2. Create New File\n");
+ printf("3. Show Directory\n");
+ printf("4. Exit\n");
+ printf("Enter your choice: ");
+ scanf("%d", &choice);
+
+ switch (choice) {
+ case 1:
+ showBitVector(total_blocks);
+ break;
+ case 2:
+ createNewFile(total_blocks);
+ break;
+ case 3:
+ showDirectory(total_blocks);
+ break;
+ case 4:
+ printf("Exiting...\n");
+ exit(0);
+ default:
+ printf("Invalid choice. Please try again.\n");
+ }
+ }
+19
+
+ return 0;
+}
+Q.2 Write a simulation program for disk scheduling using C-SCAN algorithm. Accept total
+number of disk blocks, disk request string, and current head position from the user. Display
+the list of request in the order in which it is served. Also display the total number of head
+moments..
+80, 150, 60,135, 40, 35, 170
+Starting Head Position: 70
+Direction: Right [15]
+Solution:
+#include <stdio.h>
+#include <stdlib.h>
+void c_scan(int *requests, int total_requests, int start_head_position, char direction) {
+ int total_head_movements = 0;
+ int current_head_position = start_head_position;
+ int upper_limit = 199;
+ int lower_limit = 0;
+ if (direction == 'R') {
+ for (int i = start_head_position; i <= upper_limit; i++) {
+ for (int j = 0; j < total_requests; j++) {
+ if (requests[j] == i) {
+
+20
+ printf("%d ", requests[j]);
+ total_head_movements += abs(current_head_position - requests[j]);
+ current_head_position = requests[j];
+ }
+ }
+ }
+ for (int i = lower_limit; i < start_head_position; i++) {
+ for (int j = 0; j < total_requests; j++) {
+ if (requests[j] == i) {
+ printf("%d ", requests[j]);
+ total_head_movements += abs(current_head_position - requests[j]);
+ current_head_position = requests[j];
+ }
+ }
+ }
+ } else if (direction == 'L') { // Moving left
+
+ for (int i = start_head_position; i >= lower_limit; i--) {
+ for (int j = 0; j < total_requests; j++) {
+ if (requests[j] == i) {
+ printf("%d ", requests[j]);
+ total_head_movements += abs(current_head_position - requests[j]);
+21
+ current_head_position = requests[j];
+ }
+ }
+ }
+
+ for (int i = upper_limit; i > start_head_position; i--) {
+ for (int j = 0; j < total_requests; j++) {
+ if (requests[j] == i) {
+ printf("%d ", requests[j]);
+ total_head_movements += abs(current_head_position - requests[j]);
+ current_head_position = requests[j];
+ }
+ }
+ }
+ }
+ printf("\nTotal head movements: %d\n", total_head_movements);
+}
+int main() {
+ int total_blocks, start_head_position;
+ char direction;
+ int requests[1000]; // Assuming a maximum of 1000 requests
+
+22
+ int total_requests = 0;
+ printf("Enter the total number of disk blocks: ");
+ scanf("%d", &total_blocks);
+ printf("Enter the disk request string (enter -1 to end): ");
+ while (1) {
+ int request;
+ scanf("%d", &request);
+ if (request == -1) {
+ break;
+ }
+ requests[total_requests++] = request;
+ }
+ printf("Enter the starting head position: ");
+ scanf("%d", &start_head_position);
+ printf("Enter the direction (L for left, R for right): ");
+ scanf(" %c", &direction);
+ c_scan(requests, total_requests, start_head_position, direction);
+23
+ return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+24
+Slip7)
+
+Q.1 Consider the following snapshot of the system.
+Proces
+s
+ Allocation Max Available
+ A B C D A B C D A B C D
+P0 2 0 0 1 4 2 1 2 3 3 2 1
+P1 3 1 2 1 5 2 5 2
+P2 2 1 0 3 2 3 1 6
+P3 1 3 1 2 1 4 2 4
+P4 1 4 3 2 3 6 6 5
+Using Resource –Request algorithm to Check whether the current system is in safe state
+or not
+Solution:
+#include <stdio.h>
+#include <stdbool.h>
+#define NUM_RESOURCES 4
+#define NUM_PROCESSES 5
+int available[NUM_RESOURCES] = {2, 1, 1, 1};
+int allocation[NUM_PROCESSES][NUM_RESOURCES] = {
+ {2, 0, 0, 1},
+ {3, 1, 2, 1},
+ {2, 1, 0, 3},
+ {1, 3, 1, 2},
+ {1, 4, 3, 2}
+25
+};
+int max[NUM_PROCESSES][NUM_RESOURCES] = {
+ {4, 2, 1, 2},
+ {5, 2, 5, 2},
+ {2, 3, 1, 6},
+ {1, 4, 2, 4},
+ {3, 6, 6, 5}
+};
+int need[NUM_PROCESSES][NUM_RESOURCES];
+bool isSafeState() {
+ bool finish[NUM_PROCESSES] = {false};
+ int work[NUM_RESOURCES];
+ int safeSequence[NUM_PROCESSES];
+ int count = 0;
+ for (int i = 0; i < NUM_RESOURCES; i++) {
+ work[i] = available[i];
+ }
+ for (int i = 0; i < NUM_PROCESSES; i++) {
+ for (int j = 0; j < NUM_RESOURCES; j++) {
+ need[i][j] = max[i][j] - allocation[i][j];
+ }
+ }
+
+26
+ while (count < NUM_PROCESSES) {
+ bool found = false;
+ for (int i = 0; i < NUM_PROCESSES; i++) {
+ if (!finish[i]) {
+ int j;
+ for (j = 0; j < NUM_RESOURCES; j++) {
+ if (need[i][j] > work[j]) {
+ break;
+ }
+ }
+ if (j == NUM_RESOURCES) {
+ for (int k = 0; k < NUM_RESOURCES; k++) {
+ work[k] += allocation[i][k];
+ }
+ finish[i] = true;
+ safeSequence[count++] = i;
+ found = true;
+ }
+ }
+ }
+ if (!found) {
+ printf("System is not in a safe state.\n");
+ return false;
+27
+ }
+ }
+ printf("System is in a safe state.\nSafe sequence: ");
+ for (int i = 0; i < NUM_PROCESSES; i++) {
+ printf("P%d ", safeSequence[i]);
+ }
+ printf("\n");
+ return true;
+}
+int main() {
+ isSafeState();
+ return 0;
+} [15]
+
+Q.2 Write a simulation program for disk scheduling using SCAN algorithm. Accept total
+number of disk blocks, disk request string, and current head position from the user. Display
+the list of request in the order in which it is served. Also display the total number of head
+moments.
+82, 170, 43, 140, 24, 16, 190
+ Starting Head Position: 50
+Direction: Right
+ [15]
+ Solution:
+#include <stdio.h>
+#include <stdlib.h>
+
+28
+void scan(int *requests, int total_requests, int start_head_position, char direction) {
+ int total_head_movements = 0;
+ int current_head_position = start_head_position;
+ int upper_limit = 199;
+ int lower_limit = 0;
+ if (direction == 'R') {
+ for (int i = start_head_position; i <= upper_limit; i++) {
+ for (int j = 0; j < total_requests; j++) {
+ if (requests[j] == i) {
+ printf("%d ", requests[j]);
+ total_head_movements += abs(current_head_position - requests[j]);
+ current_head_position = requests[j];
+ }
+ }
+ }
+ for (int i = upper_limit; i >= lower_limit; i--) {
+ for (int j = 0; j < total_requests; j++) {
+ if (requests[j] == i) {
+ printf("%d ", requests[j]);
+ total_head_movements += abs(current_head_position - requests[j]);
+ current_head_position = requests[j];
+29
+ }
+ }
+ }
+ } else if (direction == 'L') {
+ for (int i = start_head_position; i >= lower_limit; i--) {
+ for (int j = 0; j < total_requests; j++) {
+ if (requests[j] == i) {
+ printf("%d ", requests[j]);
+ total_head_movements += abs(current_head_position - requests[j]);
+ current_head_position = requests[j];
+ }
+ }
+ }
+ for (int i = lower_limit; i <= upper_limit; i++) {
+ for (int j = 0; j < total_requests; j++) {
+ if (requests[j] == i) {
+ printf("%d ", requests[j]);
+ total_head_movements += abs(current_head_position - requests[j]);
+ current_head_position = requests[j];
+ }
+ }
+ }
+ }
+
+30
+ printf("\nTotal head movements: %d\n", total_head_movements);
+}
+int main() {
+ int total_blocks, start_head_position;
+ char direction;
+ int requests[1000];
+ int total_requests = 0;
+ printf("Enter the total number of disk blocks: ");
+ scanf("%d", &total_blocks);
+ printf("Enter the disk request string (enter -1 to end): ");
+ while (1) {
+ int request;
+ scanf("%d", &request);
+ if (request == -1) {
+ break;
+ }
+ requests[total_requests++] = request;
+ }
+31
+ printf("Enter the starting head position: ");
+ scanf("%d", &start_head_position);
+ printf("Enter the direction (L for left, R for right): ");
+ scanf(" %c", &direction);
+ scan(requests, total_requests, start_head_position, direction);
+ return 0;
+}
+
+
+
+
+
+
+
+
+
+32
+Slip8)
+Q.1 Write a program to simulate Contiguous file allocation method. Assume disk with n
+number of blocks. Give value of n as input. Randomly mark some block as allocated and
+accordingly maintain the list of free blocks Write menu driver program with menu options
+as mentioned above and implement each option.
+• Show Bit Vector
+• Create New File
+• Show Directory
+• Exit [15]
+
+ Solution:
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#define MAX_BLOCKS 1000
+int allocated_blocks[MAX_BLOCKS];
+int free_blocks[MAX_BLOCKS];
+int total_blocks;
+int num_allocated_blocks = 0;
+int num_free_blocks;
+void initialize() {
+ srand(time(0));
+ printf("Enter the total number of disk blocks: ");
+ scanf("%d", &total_blocks);
+ num_free_blocks = total_blocks;
+ for (int i = 0; i < total_blocks; i++) {
+ free_blocks[i] = i;
+ }
+}
+void showBitVector() {
+33
+ printf("Bit Vector:\n");
+ for (int i = 0; i < total_blocks; i++) {
+ if (allocated_blocks[i] == 1) {
+ printf("1 ");
+ } else {
+ printf("0 ");
+ }
+ }
+ printf("\n");
+}
+void createNewFile() {
+ if (num_free_blocks == 0) {
+ printf("No free blocks available.\n");
+ return;
+ }
+ int index = rand() % num_free_blocks;
+ int block = free_blocks[index];
+ allocated_blocks[block] = 1;
+ num_allocated_blocks++;
+ num_free_blocks--;
+ free_blocks[index] = free_blocks[num_free_blocks];
+ printf("File created at block %d.\n", block);
+}
+void showDirectory() {
+ printf("Allocated Blocks:\n");
+ for (int i = 0; i < total_blocks; i++) {
+ if (allocated_blocks[i] == 1) {
+ printf("%d ", i);
+ }
+ }
+ printf("\n");
+}
+int main() {
+
+34
+ initialize();
+ char choice;
+ do {
+ printf("\nMenu:\n");
+ printf("1. Show Bit Vector\n");
+ printf("2. Create New File\n");
+ printf("3. Show Directory\n");
+ printf("4. Exit\n");
+ printf("Enter your choice: ");
+ scanf(" %c", &choice);
+ switch (choice) {
+ case '1':
+ showBitVector();
+ break;
+ case '2':
+ createNewFile();
+ break;
+ case '3':
+ showDirectory();
+ break;
+ case '4':
+ printf("Exiting...\n");
+ break;
+ default:
+ printf("Invalid choice. Please try again.\n");
+ }
+ } while (choice != '4');
+ return 0;
+}
+Q.2 Write a simulation program for disk scheduling using SSTF algorithm. Accept total
+number of disk blocks, disk request string, and current head position from the user. Display
+the list of request in the order in which it is served. Also display the total number of head
+moments.
+35
+ 186, 89, 44, 70, 102, 22, 51, 124
+ Start Head Position: 70 [15]
+ Solution:
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+void sstf(int *requests, int total_requests, int start_head_position) {
+ int total_head_movements = 0;
+ int current_head_position = start_head_position;
+ int min_distance, min_index, temp;
+ int remaining_requests[total_requests];
+ for (int i = 0; i < total_requests; i++) {
+ remaining_requests[i] = requests[i];
+ }
+ printf("SSTF Schedule:\n");
+ for (int i = 0; i < total_requests; i++) {
+ min_distance = INT_MAX;
+ for (int j = 0; j < total_requests; j++) {
+ if (abs(current_head_position - remaining_requests[j]) < min_distance) {
+ min_distance = abs(current_head_position - remaining_requests[j]);
+ min_index = j;
+ }
+
+36
+ }
+ printf("%d ", remaining_requests[min_index]);
+ total_head_movements += min_distance;
+ current_head_position = remaining_requests[min_index];
+ remaining_requests[min_index] = INT_MAX;
+ }
+ printf("\nTotal head movements: %d\n", total_head_movements);
+}
+int main() {
+ int total_blocks, start_head_position;
+ int requests[1000];
+ int total_requests = 0;
+ printf("Enter the total number of disk blocks: ");
+ scanf("%d", &total_blocks);
+ printf("Enter the disk request string (enter -1 to end): ");
+ while (1) {
+ int request;
+ scanf("%d", &request);
+ if (request == -1) {
+37
+ break;
+ }
+ requests[total_requests++] = request;
+ }
+ printf("Enter the starting head position: ");
+ scanf("%d", &start_head_position);
+ sstf(requests, total_requests, start_head_position);
+ return 0;
+}
+
+
+
+
+
+
+
+
+
+38
+Slip9)
+Q.1. Consider the following snapshot of system, A, B, C, D is the resource type.
+Proces
+s
+Allocation Max Available
+ A B C D A B C D A B C D
+P0 0 0 1 2 0 0 1 2 1 5 2 0
+P1 1 0 0 0 1 7 5 0
+P2 1 3 5 4 2 3 5 6
+P3 0 6 3 2 0 6 5 2
+P4 0 0 1 4 0 6 5 6
+Using Resource –Request algorithm to Check whether the current system is in safe state
+or not
+Solution:
+#include <stdio.h>
+#include <stdbool.h>
+#define NUM_RESOURCES 4
+#define NUM_PROCESSES 5
+int available[NUM_RESOURCES] = {1, 5, 2, 0};
+int allocation[NUM_PROCESSES][NUM_RESOURCES] = {
+ {0, 0, 1, 2},
+ {1, 0, 0, 0},
+ {1, 3, 5, 4},
+ {0, 6, 3, 2},
+ {0, 0, 1, 4}
+};
+int max[NUM_PROCESSES][NUM_RESOURCES] = {
+ {0, 0, 1, 2},
+ {1, 7, 5, 0},
+ {2, 3, 5, 6},
+ {0, 6, 5, 2},
+ {0, 6, 5, 6}
+};
+39
+bool isSafeState() {
+ bool finish[NUM_PROCESSES] = {false};
+ int work[NUM_RESOURCES];
+ int safeSequence[NUM_PROCESSES];
+ int count = 0;
+ for (int i = 0; i < NUM_RESOURCES; i++) {
+ work[i] = available[i];
+ }
+ while (count < NUM_PROCESSES) {
+ bool found = false;
+ for (int i = 0; i < NUM_PROCESSES; i++) {
+ if (!finish[i]) {
+ int j;
+ for (j = 0; j < NUM_RESOURCES; j++) {
+ if (max[i][j] - allocation[i][j] > work[j]) {
+ break;
+ }
+ }
+ if (j == NUM_RESOURCES) {
+ for (int k = 0; k < NUM_RESOURCES; k++) {
+ work[k] += allocation[i][k];
+ }
+ finish[i] = true;
+ safeSequence[count++] = i;
+ found = true;
+ }
+ }
+ }
+ if (!found) {
+ printf("System is not in a safe state.\n");
+ return false;
+ }
+ }
+
+40
+ printf("System is in a safe state.\nSafe sequence: ");
+ for (int i = 0; i < NUM_PROCESSES; i++) {
+ printf("P%d ", safeSequence[i]);
+ }
+ printf("\n");
+ return true;
+}
+int main() {
+ isSafeState();
+ return 0;
+} . [15]
+
+
+Q.2 Write a simulation program for disk scheduling using LOOK algorithm. Accept total
+number of disk blocks, disk request string, and current head position from the user. Display
+the list of request in the order in which it is served. Also display the total number of head
+moments. [15]
+ 176, 79, 34, 60, 92, 11, 41, 114
+ Starting Head Position: 65
+ Direction: Left
+Solution:
+#include <stdio.h>
+#include <stdlib.h>
+void look(int *requests, int total_requests, int start_head_position, char direction) {
+ int total_head_movements = 0;
+ int current_head_position = start_head_position;
+ int min_request = 0, max_request = 199;
+ int upper_limit, lower_limit;
+ if (direction == 'L') {
+ upper_limit = current_head_position;
+ lower_limit = 0;
+ } else {
+41
+ upper_limit = max_request;
+ lower_limit = current_head_position;
+ }
+ printf("LOOK Schedule:\n");
+ while (1) {
+ int closest_request = -1;
+ int closest_distance = abs(upper_limit - lower_limit);
+ int closest_index = -1;
+ for (int i = 0; i < total_requests; i++) {
+ if (requests[i] >= lower_limit && requests[i] <= upper_limit) {
+ int distance = abs(requests[i] - current_head_position);
+ if (distance < closest_distance) {
+ closest_request = requests[i];
+ closest_distance = distance;
+ closest_index = i;
+ }
+ }
+ }
+ if (closest_request == -1) {
+ // If no request is found within the current range, change direction
+ if (direction == 'L') {
+ direction = 'R';
+ upper_limit = max_request;
+ } else {
+ direction = 'L';
+ lower_limit = 0;
+ }
+ } else {
+ printf("%d ", closest_request);
+ total_head_movements += abs(current_head_position - closest_request);
+ current_head_position = closest_request;
+ // Remove served request from the list
+
+42
+ for (int i = closest_index; i < total_requests - 1; i++) {
+ requests[i] = requests[i + 1];
+ }
+ total_requests--;
+ // Update range based on direction
+ if (direction == 'L') {
+ upper_limit = closest_request - 1;
+ } else {
+ lower_limit = closest_request + 1;
+ }
+ }
+ // If all requests are served, exit the loop
+ if (total_requests == 0) {
+ break;
+ }
+ }
+ printf("\nTotal head movements: %d\n", total_head_movements);
+}
+int main() {
+ int total_blocks, start_head_position;
+ char direction;
+ int requests[1000]; // Assuming a maximum of 1000 requests
+ int total_requests = 0;
+ printf("Enter the total number of disk blocks: ");
+ scanf("%d", &total_blocks);
+ printf("Enter the disk request string (enter -1 to end): ");
+ while (1) {
+ int request;
+ scanf("%d", &request);
+ if (request == -1) {
+43
+ break;
+ }
+ requests[total_requests++] = request;
+ }
+ printf("Enter the starting head position: ");
+ scanf("%d", &start_head_position);
+ printf("Enter the direction (L for left, R for right): ");
+ scanf(" %c", &direction);
+ look(requests, total_requests, start_head_position, direction);
+ return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+44
+Slip 13)
+Q.1 Write a C program to simulate Banker’s algorithm for the purpose of deadlock
+avoidance. The following snapshot of system, A, B, C and D are the resource type.
+Proces
+s
+Allocation Max Available
+ A B C A B C A B C
+P0 0 1 0 0 0 0 0 0 0
+P1 2 0 0 2 0 2
+P2 3 0 3 0 0 0
+P3 2 1 1 1 0 0
+P4 0 0 2 0 0 2
+a) Calculate and display the content of need matrix?
+b) Is the system in safe state? If display the safe sequence. [15]
+Solution:
+#include <stdio.h>
+#include <stdbool.h>
+#define NUM_RESOURCES 3
+#define NUM_PROCESSES 5
+int available[NUM_RESOURCES] = {0, 0, 0};
+int allocation[NUM_PROCESSES][NUM_RESOURCES] = {
+ {0, 1, 0},
+ {2, 0, 0},
+ {3, 0, 3},
+ {2, 1, 1},
+ {0, 0, 2}
+};
+int max[NUM_PROCESSES][NUM_RESOURCES] = {
+ {0, 0, 0},
+ {2, 0, 2},
+ {0, 0, 0},
+ {1, 0, 0},
+ {0, 0, 2}
+45
+};
+int need[NUM_PROCESSES][NUM_RESOURCES];
+void calculateNeedMatrix() {
+ for (int i = 0; i < NUM_PROCESSES; i++) {
+ for (int j = 0; j < NUM_RESOURCES; j++) {
+ need[i][j] = max[i][j] - allocation[i][j];
+ }
+ }
+}
+bool isSafeState() {
+ int work[NUM_RESOURCES];
+ bool finish[NUM_PROCESSES] = {false};
+ int safeSequence[NUM_PROCESSES];
+ int count = 0;
+ for (int i = 0; i < NUM_RESOURCES; i++) {
+ work[i] = available[i];
+ }
+ while (count < NUM_PROCESSES) {
+ bool found = false;
+ for (int i = 0; i < NUM_PROCESSES; i++) {
+ if (!finish[i]) {
+ int j;
+ for (j = 0; j < NUM_RESOURCES; j++) {
+ if (need[i][j] > work[j]) {
+ break;
+ }
+ }
+ if (j == NUM_RESOURCES) {
+ for (int k = 0; k < NUM_RESOURCES; k++) {
+ work[k] += allocation[i][k];
+ }
+ finish[i] = true;
+ safeSequence[count++] = i;
+
+46
+ found = true;
+ }
+ }
+ }
+ if (!found) {
+ return false;
+ }
+ }
+ printf("System is in a safe state.\nSafe sequence: ");
+ for (int i = 0; i < NUM_PROCESSES; i++) {
+ printf("P%d ", safeSequence[i]);
+ }
+ printf("\n");
+ return true;
+}
+int main() {
+ calculateNeedMatrix();
+ printf("Need Matrix:\n");
+ for (int i = 0; i < NUM_PROCESSES; i++) {
+ printf("P%d: ", i);
+ for (int j = 0; j < NUM_RESOURCES; j++) {
+ printf("%d ", need[i][j]);
+ }
+ printf("\n");
+ }
+ isSafeState();
+ return 0;
+}
+
+
+Q.2 Write a simulation program for disk scheduling using SCAN algorithm. Accept total
+number of disk blocks, disk request string, and current head position from the user. Display
+47
+the list of request in the order in which it is served. Also display the total number of head
+moments.
+176, 79, 34, 60, 92, 11, 41, 114
+Starting Head Position: 65
+Direction: Left [15]
+
+
+ Solution:
+#include <stdio.h>
+#include <stdlib.h>
+void scan(int *requests, int total_requests, int start_head_position, char direction) {
+ int total_head_movements = 0;
+ int current_head_position = start_head_position;
+ int min_request = 0, max_request = 199;
+ printf("SCAN Schedule:\n");
+ for (int i = 0; i < total_requests - 1; i++) {
+ for (int j = 0; j < total_requests - i - 1; j++) {
+ if (requests[j] > requests[j + 1]) {
+ int temp = requests[j];
+ requests[j] = requests[j + 1];
+ requests[j + 1] = temp;
+ }
+ }
+ }
+ // Serve requests in the direction of movement
+ if (direction == 'L') {
+ for (int i = 0; i < total_requests; i++) {
+ if (requests[i] < current_head_position) {
+ printf("%d ", requests[i]);
+ total_head_movements += abs(current_head_position - requests[i]);
+ current_head_position = requests[i];
+ }
+
+48
+ }
+ printf("%d ", min_request);
+ total_head_movements += abs(current_head_position - min_request);
+ current_head_position = min_request;
+ for (int i = total_requests - 1; i >= 0; i--) {
+ if (requests[i] > current_head_position) {
+ printf("%d ", requests[i]);
+ total_head_movements += abs(current_head_position - requests[i]);
+ current_head_position = requests[i];
+ }
+ }
+ } else {
+ for (int i = total_requests - 1; i >= 0; i--) {
+ if (requests[i] > current_head_position) {
+ printf("%d ", requests[i]);
+ total_head_movements += abs(current_head_position - requests[i]);
+ current_head_position = requests[i];
+ }
+ }
+ printf("%d ", max_request);
+ total_head_movements += abs(current_head_position - max_request);
+ current_head_position = max_request;
+ for (int i = 0; i < total_requests; i++) {
+ if (requests[i] < current_head_position) {
+ printf("%d ", requests[i]);
+ total_head_movements += abs(current_head_position - requests[i]);
+ current_head_position = requests[i];
+ }
+ }
+ }
+ printf("\nTotal head movements: %d\n", total_head_movements);
+}
+int main() {
+49
+ int total_blocks, start_head_position;
+ char direction;
+ int requests[1000]; // Assuming a maximum of 1000 requests
+ int total_requests = 0;
+ printf("Enter the total number of disk blocks: ");
+ scanf("%d", &total_blocks);
+ printf("Enter the disk request string (enter -1 to end): ");
+ while (1) {
+ int request;
+ scanf("%d", &request);
+ if (request == -1) {
+ break;
+ }
+ requests[total_requests++] = request;
+ }
+ printf("Enter the starting head position: ");
+ scanf("%d", &start_head_position);
+ printf("Enter the direction (L for left, R for right): ");
+ scanf(" %c", &direction);
+ scan(requests, total_requests, start_head_position, direction);
+ return 0;
+}
+
+50
+Slip 14)
+Q.1 Write a program to simulate Sequential (Contiguous) file allocation method. Assume
+disk with n number of blocks. Give value of n as input. Randomly mark some block as
+allocated and accordingly maintain the list of free blocks Write menu driver program with
+menu options as mentioned below and implement each option.
+• Show Bit Vector
+• Show Directory
+• Delete File
+• Exit [15]
+Solution:
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <time.h>
+#define MAX_BLOCKS 100
+bool allocated[MAX_BLOCKS] = {false};
+int free_blocks[MAX_BLOCKS];
+int num_blocks;
+void initialize() {
+ for (int i = 0; i < num_blocks; i++) {
+ free_blocks[i] = i;
+ }
+}
+void showBitVector() {
+51
+ printf("Bit Vector:\n");
+ for (int i = 0; i < num_blocks; i++) {
+ printf("%c ", allocated[i] ? '1' : '0');
+ }
+ printf("\n");
+}
+void showDirectory() {
+ printf("Directory:\n");
+ printf("Allocated Blocks:\n");
+ for (int i = 0; i < num_blocks; i++) {
+ if (allocated[i]) {
+ printf("%d ", i);
+ }
+ }
+ printf("\nFree Blocks:\n");
+ for (int i = 0; i < num_blocks; i++) {
+ if (!allocated[i]) {
+ printf("%d ", i);
+ }
+ }
+ printf("\n");
+}
+void deleteFile() {
+ int start_block;
+ printf("Enter the starting block of the file to delete: ");
+ scanf("%d", &start_block);
+
+52
+ if (allocated[start_block]) {
+ allocated[start_block] = false;
+ printf("File deleted successfully.\n");
+ } else {
+ printf("Error: Block is not allocated.\n");
+ }
+}
+int main() {
+ srand(time(NULL));
+ printf("Enter the total number of disk blocks: ");
+ scanf("%d", &num_blocks);
+ initialize();
+ int choice;
+ do {
+ printf("\nMenu:\n");
+ printf("1. Show Bit Vector\n");
+ printf("2. Show Directory\n");
+ printf("3. Delete File\n");
+ printf("4. Exit\n");
+ printf("Enter your choice: ");
+ scanf("%d", &choice);
+53
+ switch (choice) {
+ case 1:
+ showBitVector();
+ break;
+ case 2:
+ showDirectory();
+ break;
+ case 3:
+ deleteFile();
+ break;
+ case 4:
+ printf("Exiting...\n");
+ break;
+ default:
+ printf("Invalid choice. Please enter a valid option.\n");
+ }
+ } while (choice != 4);
+ return 0;
+}
+
+Q.2 Write a simulation program for disk scheduling using SSTF algorithm. Accept total
+number of disk blocks, disk request string, and current head position from the user. Display
+the list of request in the order in which it is served. Also display the total number of head
+moments.
+55, 58, 39, 18, 90, 160, 150, 38, 184
+Start Head Position: 50
+ [15]
+ Solution:
+
+54
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+void sstf(int *requests, int total_requests, int start_head_position) {
+ int total_head_movements = 0;
+ int current_head_position = start_head_position;
+ bool visited[total_requests];
+ printf("SSTF Schedule:\n");
+ for (int i = 0; i < total_requests; i++) {
+ visited[i] = false;
+ }
+ for (int i = 0; i < total_requests; i++) {
+ int shortest_distance = 999999; // Initializing with a large value
+ int shortest_index = -1;
+ for (int j = 0; j < total_requests; j++) {
+ if (!visited[j]) {
+ int distance = abs(current_head_position - requests[j]);
+ if (distance < shortest_distance) {
+55
+ shortest_distance = distance;
+ shortest_index = j;
+ }
+ }
+ }
+ visited[shortest_index] = true;
+ total_head_movements += shortest_distance;
+ current_head_position = requests[shortest_index];
+ printf("%d ", current_head_position);
+ }
+ printf("\nTotal head movements: %d\n", total_head_movements);
+}
+int main() {
+ int total_blocks, start_head_position;
+ int requests[1000]; // Assuming a maximum of 1000 requests
+ int total_requests = 0;
+ printf("Enter the total number of disk blocks: ");
+ scanf("%d", &total_blocks);
+ printf("Enter the disk request string (enter -1 to end): ");
+
+56
+ while (1) {
+ int request;
+ scanf("%d", &request);
+ if (request == -1) {
+ break;
+ }
+ requests[total_requests++] = request;
+ }
+ printf("Enter the starting head position: ");
+ scanf("%d", &start_head_position);
+ sstf(requests, total_requests, start_head_position);
+ return 0;
+}
+
+
+
+
+
+
+
+
+57
+
+Slip15)
+Q.1 Write a program to simulate Linked file allocation method. Assume disk with n
+number of blocks. Give value of n as input. Randomly mark some block as allocated and
+accordingly maintain the list of free blocks Write menu driver program with menu options
+as mentioned below and implement each option.
+• Show Bit Vector
+• Create New File
+• Show Directory
+• Exit
+Solution:
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <time.h>
+#define MAX_BLOCKS 100
+typedef struct Node {
+ int block_number;
+ struct Node* next;
+} Node;
+bool allocated[MAX_BLOCKS] = {false};
+Node* free_blocks_head = NULL;
+int num_blocks;
+void initialize() {
+ for (int i = 0; i < num_blocks; i++) {
+ Node* new_node = (Node*)malloc(sizeof(Node));
+ new_node->block_number = i;
+ new_node->next = free_blocks_head;
+ free_blocks_head = new_node;
+ }
+}
+
+58
+void showBitVector() {
+ printf("Bit Vector:\n");
+ for (int i = 0; i < num_blocks; i++) {
+ printf("%c ", allocated[i] ? '1' : '0');
+ }
+ printf("\n");
+}
+void createNewFile() {
+ if (free_blocks_head == NULL) {
+ printf("Error: No free blocks available.\n");
+ return;
+ }
+ int block_number = free_blocks_head->block_number;
+ allocated[block_number] = true;
+ Node* temp = free_blocks_head;
+ free_blocks_head = free_blocks_head->next;
+ free(temp);
+ printf("New file created in block %d.\n", block_number);
+}
+void showDirectory() {
+ printf("Directory:\n");
+ printf("Allocated Blocks:\n");
+ for (int i = 0; i < num_blocks; i++) {
+ if (allocated[i]) {
+ printf("%d ", i);
+ }
+ }
+ printf("\nFree Blocks:\n");
+ Node* temp = free_blocks_head;
+ while (temp != NULL) {
+59
+ printf("%d ", temp->block_number);
+ temp = temp->next;
+ }
+ printf("\n");
+}
+void deallocateAllBlocks() {
+ for (int i = 0; i < num_blocks; i++) {
+ allocated[i] = false;
+ }
+ free_blocks_head = NULL;
+ initialize();
+}
+int main() {
+ srand(time(NULL));
+ printf("Enter the total number of disk blocks: ");
+ scanf("%d", &num_blocks);
+ initialize();
+ int choice;
+ do {
+ printf("\nMenu:\n");
+ printf("1. Show Bit Vector\n");
+ printf("2. Create New File\n");
+ printf("3. Show Directory\n");
+ printf("4. Exit\n");
+ printf("Enter your choice: ");
+ scanf("%d", &choice);
+ switch (choice) {
+ case 1:
+ showBitVector();
+ break;
+
+60
+ case 2:
+ createNewFile();
+ break;
+ case 3:
+ showDirectory();
+ break;
+ case 4:
+ deallocateAllBlocks();
+ printf("Exiting...\n");
+ break;
+ default:
+ printf("Invalid choice. Please enter a valid option.\n");
+ }
+ } while (choice != 4);
+ return 0;
+}
+Q.2 Write a simulation program for disk scheduling using C-SCAN algorithm. Accept total
+number of disk blocks, disk request string, and current head position from the user. Display
+the list of request in the order in which it is served. Also display the total number of head
+moments.. [15]
+80, 150, 60,135, 40, 35, 170
+Starting Head Position: 70
+Direction: Right
+Solution:
+#include <stdio.h>
+#include <stdlib.h>
+void c_scan(int *requests, int total_requests, int start_head_position, char direction) {
+ int total_head_movements = 0;
+ int current_head_position = start_head_position;
+ int min_request = 0, max_request = 199;
+61
+ printf("C-SCAN Schedule:\n");
+ // Sort the requests
+ for (int i = 0; i < total_requests - 1; i++) {
+ for (int j = 0; j < total_requests - i - 1; j++) {
+ if (requests[j] > requests[j + 1]) {
+ int temp = requests[j];
+ requests[j] = requests[j + 1];
+ requests[j + 1] = temp;
+ }
+ }
+ }
+ if (direction == 'L') {
+ for (int i = 0; i < total_requests; i++) {
+ if (requests[i] < current_head_position) {
+ printf("%d ", requests[i]);
+ total_head_movements += abs(current_head_position - requests[i]);
+ current_head_position = requests[i];
+ }
+ }
+ printf("%d ", min_request);
+ total_head_movements += abs(current_head_position - min_request);
+ current_head_position = min_request;
+ for (int i = 0; i < total_requests; i++) {
+ if (requests[i] > current_head_position && requests[i] <= max_request) {
+ printf("%d ", requests[i]);
+ total_head_movements += abs(current_head_position - requests[i]);
+ current_head_position = requests[i];
+ }
+ }
+ printf("%d ", max_request);
+ total_head_movements += abs(current_head_position - max_request);
+ } else {
+ for (int i = total_requests - 1; i >= 0; i--) {
+ if (requests[i] > current_head_position) {
+
+62
+ printf("%d ", requests[i]);
+ total_head_movements += abs(current_head_position - requests[i]);
+ current_head_position = requests[i];
+ }
+ }
+ printf("%d ", max_request);
+ total_head_movements += abs(current_head_position - max_request);
+ current_head_position = max_request;
+ for (int i = total_requests - 1; i >= 0; i--) {
+ if (requests[i] < current_head_position && requests[i] >= min_request) {
+ printf("%d ", requests[i]);
+ total_head_movements += abs(current_head_position - requests[i]);
+ current_head_position = requests[i];
+ }
+ }
+ printf("%d ", min_request);
+ total_head_movements += abs(current_head_position - min_request);
+ }
+ printf("\nTotal head movements: %d\n", total_head_movements);
+}
+int main() {
+ int total_blocks, start_head_position;
+ char direction;
+ int requests[1000]; // Assuming a maximum of 1000 requests
+ int total_requests = 0;
+ printf("Enter the total number of disk blocks: ");
+ scanf("%d", &total_blocks);
+ printf("Enter the disk request string (enter -1 to end): ");
+ while (1) {
+ int request;
+ scanf("%d", &request);
+63
+ if (request == -1) {
+ break;
+ }
+ requests[total_requests++] = request;
+ }
+ printf("Enter the starting head position: ");
+ scanf("%d", &start_head_position);
+ printf("Enter the direction (L for left, R for right): ");
+ scanf(" %c", &direction);
+ c_scan(requests, total_requests, start_head_position, direction);
+ return 0;
+}
+
+
+
+
+
+
+
+64
+
+Slip 17)
+Q.1 Write a program to simulate Indexed file allocation method. Assume disk with n
+number of blocks. Give value of n as input. Randomly mark some block as allocated and
+accordingly maintain the list of free blocks Write menu driver program with menu
+options as mentioned above and implement each option.
+• Show Bit Vector
+• Show Directory
+• Delete Already File
+• Exit
+Solution:
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <time.h>
+#define MAX_BLOCKS 100
+typedef struct Node {
+ int block_number;
+ struct Node* next;
+} Node;
+bool allocated[MAX_BLOCKS] = {false};
+Node* free_blocks_head = NULL;
+int num_blocks;
+void initialize() {
+ for (int i = 0; i < num_blocks; i++) {
+65
+ Node* new_node = (Node*)malloc(sizeof(Node));
+ new_node->block_number = i;
+ new_node->next = free_blocks_head;
+ free_blocks_head = new_node;
+ }
+}
+void showBitVector() {
+ printf("Bit Vector:\n");
+ for (int i = 0; i < num_blocks; i++) {
+ printf("%c ", allocated[i] ? '1' : '0');
+ }
+ printf("\n");
+}
+void showDirectory() {
+ printf("Directory:\n");
+ printf("Allocated Blocks:\n");
+ for (int i = 0; i < num_blocks; i++) {
+ if (allocated[i]) {
+ printf("%d ", i);
+ }
+ }
+ printf("\nFree Blocks:\n");
+ Node* temp = free_blocks_head;
+ while (temp != NULL) {
+ printf("%d ", temp->block_number);
+ temp = temp->next;
+
+66
+ }
+ printf("\n");
+}
+void deleteFile() {
+ int block_number;
+ printf("Enter the block number of the file to delete: ");
+ scanf("%d", &block_number);
+ if (allocated[block_number]) {
+ allocated[block_number] = false;
+ Node* temp = (Node*)malloc(sizeof(Node));
+ temp->block_number = block_number;
+ temp->next = free_blocks_head;
+ free_blocks_head = temp;
+ printf("File deleted successfully.\n");
+ } else {
+ printf("Error: Block is not allocated.\n");
+ }
+}
+int main() {
+ srand(time(NULL));
+ printf("Enter the total number of disk blocks: ");
+ scanf("%d", &num_blocks);
+67
+ initialize();
+ int choice;
+ do {
+ printf("\nMenu:\n");
+ printf("1. Show Bit Vector\n");
+ printf("2. Show Directory\n");
+ printf("3. Delete File\n");
+ printf("4. Exit\n");
+ printf("Enter your choice: ");
+ scanf("%d", &choice);
+ switch (choice) {
+ case 1:
+ showBitVector();
+ break;
+ case 2:
+ showDirectory();
+ break;
+ case 3:
+ deleteFile();
+ break;
+ case 4:
+ printf("Exiting...\n");
+ break;
+ default:
+ printf("Invalid choice. Please enter a valid option.\n");
+ }
+
+68
+ } while (choice != 4);
+ return 0;
+}
+
+Q.2 Write a simulation program for disk scheduling using LOOK algorithm. Accept total
+number of disk blocks, disk request string, and current head position from the user. Display
+the list of request in the order in which it is served. Also display the total number of head
+moments.
+23, 89, 132, 42, 187, 69, 36, 55 Start
+Head Position: 40
+ Direction: Left [15]
+
+Solution:
+
+ #include <stdio.h>
+#include <stdlib.h>
+void look(int *requests, int total_requests, int start_head_position, char direction) {
+ int total_head_movements = 0;
+ int current_head_position = start_head_position;
+ int min_request = 0, max_request = 199;
+ int min_index = -1, max_index = -1;
+ printf("LOOK Schedule:\n");
+ for (int i = 0; i < total_requests; i++) {
+ if (requests[i] <= current_head_position) {
+ if (min_index == -1 || requests[i] > requests[min_index]) {
+ min_index = i;
+ }
+ }
+ if (requests[i] >= current_head_position) {
+69
+ if (max_index == -1 || requests[i] < requests[max_index]) {
+ max_index = i;
+ }
+ }
+ }
+ if (direction == 'L') {
+ for (int i = min_index; i >= 0; i--) {
+ printf("%d ", requests[i]);
+ total_head_movements += abs(current_head_position - requests[i]);
+ current_head_position = requests[i];
+ }
+ for (int i = max_index; i < total_requests; i++) {
+ printf("%d ", requests[i]);
+ total_head_movements += abs(current_head_position - requests[i]);
+ current_head_position = requests[i];
+ }
+ } else {
+ for (int i = max_index; i < total_requests; i++) {
+ printf("%d ", requests[i]);
+ total_head_movements += abs(current_head_position - requests[i]);
+ current_head_position = requests[i];
+ }
+ for (int i = min_index; i >= 0; i--) {
+ printf("%d ", requests[i]);
+ total_head_movements += abs(current_head_position - requests[i]);
+ current_head_position = requests[i];
+ }
+ }
+ printf("\nTotal head movements: %d\n", total_head_movements);
+}
+int main() {
+ int total_blocks, start_head_position;
+ char direction;
+
+70
+ int requests[1000];
+ int total_requests = 0;
+ printf("Enter the total number of disk blocks: ");
+ scanf("%d", &total_blocks);
+ printf("Enter the disk request string (enter -1 to end): ");
+ while (1) {
+ int request;
+ scanf("%d", &request);
+ if (request == -1) {
+ break;
+ }
+ requests[total_requests++] = request;
+ }
+ printf("Enter the starting head position: ");
+ scanf("%d", &start_head_position);
+ printf("Enter the direction (L for left, R for right): ");
+ scanf(" %c", &direction);
+ look(requests, total_requests, start_head_position, direction);
+ return 0;
+}
+
+
+
+
+
+
+
+ 
